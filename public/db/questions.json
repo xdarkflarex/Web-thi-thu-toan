@@ -1,0 +1,142 @@
+[
+    {
+        "id": 1,
+        "type": "multiple",
+        "question": "Hàm số nào sau đây là hàm số bậc nhất?",
+        "options": ["$$y = 2x + 1$$", "$$y = x^2 + 1$$", "$$y = \\dfrac{3}{x}$$", "$$y = \\sqrt{x}$$"],
+        "answer": 0
+    },
+    {
+        "id": 2,
+        "type": "truefalse",
+        "question": "Hàm số y = x^2 là hàm số bậc nhất.",
+        "options": ["Đúng", "Sai"],
+        "answer": 1
+    },
+    {
+        "id": 3,
+        "type": "multiple",
+        "question": "Giá trị lớn nhất của hàm số $$y = -x^2 + 4x + 5$$ là?",
+        "options": ["5", "9", "11", "1"],
+        "answer": 2
+    },
+    {
+        "id": 4,
+        "type": "truefalse",
+        "question": "Đồ thị hàm số y = x^2 là một đường thẳng.",
+        "options": ["Đúng", "Sai"],
+        "answer": 1
+    },
+    {
+        "id": 5,
+        "type": "multiple",
+        "question": "Tập xác định của hàm số $$y = \\dfrac{1}{x-2}$$ là?",
+        "options": ["$$\\mathbb{R}$$", "$$\\mathbb{R} \\setminus \\{2\\}$$", "$$\\mathbb{R} \\setminus \\{0\\}$$", "$$\\mathbb{R} \\setminus \\{-2\\}$$"],
+        "answer": 1
+    },
+    {
+        "id": 6,
+        "type": "multiple",
+        "question": "Hàm số y = |x| đồng biến trên khoảng nào?",
+        "options": ["(-∞;0)", "(0;+∞)", "(-∞;+∞)", "Không có khoảng nào"],
+        "answer": 1
+    },
+    {
+        "id": 7,
+        "type": "multiple",
+        "question": "Giá trị nhỏ nhất của hàm số y = x^2 - 4x + 7 là?",
+        "options": ["3", "7", "0", "-1"],
+        "answer": 0
+    },
+    {
+        "id": 8,
+        "type": "truefalse",
+        "question": "Hàm số y = 2x + 3 có đồ thị là đường thẳng.",
+        "options": ["Đúng", "Sai"],
+        "answer": 0
+    },
+    {
+        "id": 9,
+        "type": "multiple",
+        "question": "Hàm số nào sau đây là hàm số chẵn?",
+        "options": ["y = x + 1", "y = x^2", "y = x^3", "y = x^3 + x"],
+        "answer": 1
+    },
+    {
+        "id": 10,
+        "type": "truefalse",
+        "question": "Đồ thị hàm số y = x^3 là đường thẳng.",
+        "options": ["Đúng", "Sai"],
+        "answer": 1
+    },
+    {
+        "id": 11,
+        "type": "multiple",
+        "question": "Nghiệm của phương trình x^2 - 5x + 6 = 0 là?",
+        "options": ["x = 2 hoặc x = 3", "x = -2 hoặc x = -3", "x = 1 hoặc x = 6", "x = -1 hoặc x = -6"],
+        "answer": 0
+    },
+    {
+        "id": 12,
+        "type": "multiple",
+        "question": "Đạo hàm của hàm số $$y = x^3$$ là?",
+        "options": ["$$3x^2$$", "$$2x$$", "$$x^2$$", "$$3x$$"],
+        "answer": 0
+    },
+    {
+        "id": 13,
+        "type": "truefalse",
+        "question": "Hàm số y = sin(x) là hàm số lẻ.",
+        "options": ["Đúng", "Sai"],
+        "answer": 0
+    },
+    {
+        "id": 14,
+        "type": "multiple",
+        "question": "Tích phân $$\\int x \\, dx$$ bằng?",
+        "options": ["$$x^2$$", "$$\\dfrac{x^2}{2} + C$$", "$$2x + C$$", "$$x + C$$"],
+        "answer": 1
+    },
+    {
+        "id": 15,
+        "type": "multiple",
+        "question": "Hàm số nào sau đây không xác định tại x = 0?",
+        "options": ["y = 1/x", "y = x^2", "y = x + 1", "y = |x|"],
+        "answer": 0
+    },
+    {
+        "id": 16,
+        "type": "truefalse",
+        "question": "Hàm số y = cos(x) là hàm số chẵn.",
+        "options": ["Đúng", "Sai"],
+        "answer": 0
+    },
+    {
+        "id": 17,
+        "type": "multiple",
+        "question": "Đạo hàm của hàm số y = e^x là?",
+        "options": ["e^x", "x.e^x", "e^(x+1)", "1"],
+        "answer": 0
+    },
+    {
+        "id": 18,
+        "type": "multiple",
+        "question": "Hàm số nào sau đây đồng biến trên R?",
+        "options": ["y = -x", "y = x^2", "y = x", "y = -x^2"],
+        "answer": 2
+    },
+    {
+        "id": 19,
+        "type": "truefalse",
+        "question": "Hàm số y = tan(x) xác định với mọi x ∈ R.",
+        "options": ["Đúng", "Sai"],
+        "answer": 1
+    },
+    {
+        "id": 20,
+        "type": "multiple",
+        "question": "Tập xác định của hàm số $$y = \\sqrt{x-1}$$ là?",
+        "options": ["$$x \\geq 1$$", "$$x > 1$$", "$$x \\leq 1$$", "$$x < 1$$"],
+        "answer": 0
+    }
+]

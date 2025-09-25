@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý câu hỏi Toán THPT</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .question-type-select { margin-bottom: 12px; padding: 6px 12px; font-size: 15px; }
+        .question-list-table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+        .question-list-table th, .question-list-table td { border: 1px solid #e3eafc; padding: 8px 10px; text-align: left; }
+        .question-list-table th { background: #f5f8fa; color: #2d8cf0; }
+        .question-list-table tr:nth-child(even) { background: #fafdff; }
+        .question-list-table td.type { font-weight: 600; color: #2d8cf0; }
+        .nav-btn { display: inline-block; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <!-- Animated Math Background Layer -->
+    <div id="animated-blue-bg" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;">
+        <canvas id="animated-blue-canvas" style="display:block;width:100vw;height:100vh;"></canvas>
+    </div>
+    <!-- HEADER GIỐNG AZOTA + ĐĂNG NHẬP -->
+    <div id="teacher-login-modal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(44,62,80,0.18);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:32px 28px 24px 28px;border-radius:16px;box-shadow:0 4px 32px rgba(44,62,80,0.18);min-width:320px;max-width:90vw;display:flex;flex-direction:column;align-items:center;">
+        <h2 style="color:#2d8cf0;margin-bottom:18px;font-size:1.4rem;font-weight:700;">Đăng nhập giáo viên</h2>
+        <input id="teacher-login-name" type="text" placeholder="Nhập họ tên" style="width:100%;margin-bottom:12px;padding:10px 14px;font-size:16px;border-radius:8px;border:1.5px solid #e3eafc;">
+        <input id="teacher-login-code" type="text" placeholder="Nhập mã giáo viên (nếu có)" style="width:100%;margin-bottom:18px;padding:10px 14px;font-size:16px;border-radius:8px;border:1.5px solid #e3eafc;">
+        <button id="teacher-login-btn" class="nav-btn" style="width:100%;margin-bottom:8px;">Đăng nhập</button>
+        <button id="teacher-login-cancel" style="background:none;border:none;color:#2d8cf0;font-size:15px;cursor:pointer;">Hủy</button>
+        <div id="teacher-login-error" style="color:#e74c3c;font-size:14px;margin-top:8px;display:none;"></div>
+      </div>
+    </div>
+    <div style="background:#fff;border-bottom:1px solid #e3eafc;padding:12px 0 10px 0;box-shadow:0 2px 8px rgba(44,62,80,0.04);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
+        <div style="display:flex;align-items:center;gap:16px;margin-left:32px;flex:1;justify-content:center;">
+            <img src="https://azota.vn/assets/logo-azota.svg" alt="Azota" style="height:32px;">
+            <span style="font-size:18px;font-weight:600;color:#2d8cf0;">Quản lý câu hỏi Toán THPT</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;margin-right:32px;">
+            <span id="teacher-name-header" style="font-size:15px;font-weight:500;color:#444;"></span>
+            <button id="teacher-logout-btn" style="background:#e3eafc;color:#2d8cf0;padding:6px 16px;border-radius:8px;font-weight:600;cursor:pointer;display:none;">Đăng xuất</button>
+            <img src="https://cdn-icons-png.flaticon.com/512/197/197473.png" alt="VN" style="height:20px;">
+            <span style="background:#e3eafc;color:#2d8cf0;padding:3px 10px;border-radius:12px;font-size:13px;">Giáo viên</span>
+        </div>
+    </div>
+    <!-- HẾT HEADER -->
+    <div style="max-width:1200px;margin:0 auto;">
+        <a href="/" class="nav-btn" style="margin:18px 0 18px 0;display:inline-block;">← Về trang chủ</a>
+    </div>
+    <div class="edit-flex" id="teacher-main" style="display: flex; gap: 32px; align-items: flex-start; justify-content: center; margin-top: 28px;">
+        <!-- Soạn thảo bên trái -->
+        <div class="question-editor" style="flex: 1.1; min-width: 340px; max-width: 480px; background: #fff; padding: 28px 22px 22px 22px; border-radius: 14px; box-shadow: 0 2px 8px rgba(44,62,80,0.07); margin-bottom: 18px;">
+            <a href="/" class="nav-btn">← Về trang chủ</a>
+            <label><b>Chọn loại câu hỏi:</b></label>
+            <select id="question-type" class="question-type-select">
+                <option value="multiple">Trắc nghiệm 4 phương án</option>
+                <option value="truefalse">Trắc nghiệm Đúng/Sai</option>
+                <option value="short">Trả lời ngắn</option>
+            </select>
+            <label><b>Soạn câu hỏi:</b></label>
+            <textarea id="editor" rows="10" style="width:100%;margin-bottom:12px;"></textarea>
+            <div id="note" style="font-size:13px;color:#888;margin-bottom:12px;"></div>
+            <button id="save-btn" type="button" style="margin-bottom:8px;">Lưu câu hỏi</button>
+            <button id="export-json-btn" type="button" style="margin-bottom:16px;">Xuất câu hỏi tự nhập ra JSON</button>
+        </div>
+        <!-- Preview và bảng câu hỏi bên phải -->
+        <div style="flex: 2; min-width: 380px;">
+            <div class="question-preview" id="question-preview" style="background:#fafdff;padding:24px 18px;border-radius:12px;box-shadow:0 2px 8px rgba(44,62,80,0.06);margin-bottom:24px;"></div>
+            <div style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(44,62,80,0.06); padding: 18px 12px 24px 12px;">
+                <h2 style="margin-top:0;">Câu hỏi gốc (từ file questions.json)</h2>
+                <table class="question-list-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Loại</th>
+                            <th>Nội dung</th>
+                            <th>Đáp án/Phương án</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questions-json-list"></tbody>
+                </table>
+                <h2 style="margin-top:18px;">Câu hỏi tự nhập</h2>
+                <table class="question-list-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Loại</th>
+                            <th>Nội dung</th>
+                            <th>Đáp án/Phương án</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="questions-local-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="teacher.js"></script>
+    <script>
+    // --- Animated Math Background (from hinhdong.html) ---
+    const animatedBg = document.getElementById('animated-blue-bg');
+    const canvas = document.getElementById('animated-blue-canvas');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let particlesArray;
+    class Particle {
+        constructor(x, y, directionX, directionY, size, color) {
+            this.x = x;
+            this.y = y;
+            this.directionX = directionX;
+            this.directionY = directionY;
+            this.size = size;
+            this.color = color;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+        update() {
+            if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+            if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+            this.x += this.directionX;
+            this.y += this.directionY;
+            this.draw();
+        }
+    }
+    function initBlueAnimation() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        particlesArray = [];
+        let numberOfParticles = (canvas.height * canvas.width) / 9000;
+        for (let i = 0; i < numberOfParticles; i++) {
+            let size = (Math.random() * 2) + 1;
+            let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+            let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+            let directionX = (Math.random() * .4) - .2;
+            let directionY = (Math.random() * .4) - .2;
+            let color = 'rgba(147, 197, 253, 0.8)';
+            particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+        }
+    }
+    function connect() {
+        let opacityValue = 1;
+        for (let a = 0; a < particlesArray.length; a++) {
+            for (let b = a; b < particlesArray.length; b++) {
+                let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
+                if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                    opacityValue = 1 - (distance / 20000);
+                    ctx.strokeStyle = `rgba(147, 197, 253, ${opacityValue})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                    ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+    function animateBlue() {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+        }
+        connect();
+        animationFrameId = requestAnimationFrame(animateBlue);
+    }
+    function stopAnimation() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+    }
+    function startAnimatedBg() {
+        stopAnimation();
+        initBlueAnimation();
+        animateBlue();
+    }
+    window.addEventListener('resize', () => {
+        startAnimatedBg();
+    });
+    startAnimatedBg();
+    </script>
+</body>
+</html>

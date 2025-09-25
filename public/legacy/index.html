@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài thi Toán THPT</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated Math Background Layer -->
+    <div id="animated-blue-bg" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;">
+        <canvas id="animated-blue-canvas" style="display:block;width:100vw;height:100vh;"></canvas>
+    </div>
+    <div class="container" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;">
+        <img src="https://azota.vn/assets/logo-azota.svg" alt="Azota" style="height:48px;margin-bottom:18px;">
+        <h1 style="font-size:2.2rem;font-weight:700;color:#2d8cf0;margin-bottom:12px;">Hệ thống thi & quản lý câu hỏi Toán THPT</h1>
+        <div style="display:flex;justify-content:center;gap:32px;margin-top:32px;">
+            <button class="nav-btn" id="open-student-login">Học sinh</button>
+            <button class="nav-btn" id="open-teacher-login">Giáo viên</button>
+        </div>
+    </div>
+    <!-- Modal đăng nhập -->
+    <div id="login-modal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(44,62,80,0.18);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:32px 28px 24px 28px;border-radius:16px;box-shadow:0 4px 32px rgba(44,62,80,0.18);min-width:320px;max-width:90vw;display:flex;flex-direction:column;align-items:center;">
+        <h2 id="login-title" style="color:#2d8cf0;margin-bottom:18px;font-size:1.4rem;font-weight:700;">Đăng nhập</h2>
+        <input id="login-name" type="text" placeholder="Nhập họ tên" style="width:100%;margin-bottom:12px;padding:10px 14px;font-size:16px;border-radius:8px;border:1.5px solid #e3eafc;">
+        <input id="login-code" type="text" placeholder="Nhập mã (nếu có)" style="width:100%;margin-bottom:18px;padding:10px 14px;font-size:16px;border-radius:8px;border:1.5px solid #e3eafc;">
+        <button id="login-btn" class="nav-btn" style="width:100%;margin-bottom:8px;">Đăng nhập</button>
+        <button id="close-login-modal" style="background:none;border:none;color:#2d8cf0;font-size:15px;cursor:pointer;">Hủy</button>
+        <div id="login-error" style="color:#e74c3c;font-size:14px;margin-top:8px;display:none;"></div>
+      </div>
+    </div>
+    <script src="index.js"></script>
+    <script>
+    // --- Animated Math Background (from hinhdong.html) ---
+    const animatedBg = document.getElementById('animated-blue-bg');
+    const canvas = document.getElementById('animated-blue-canvas');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+    let particlesArray;
+    class Particle {
+        constructor(x, y, directionX, directionY, size, color) {
+            this.x = x;
+            this.y = y;
+            this.directionX = directionX;
+            this.directionY = directionY;
+            this.size = size;
+            this.color = color;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+        update() {
+            if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+            if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+            this.x += this.directionX;
+            this.y += this.directionY;
+            this.draw();
+        }
+    }
+    function initBlueAnimation() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        particlesArray = [];
+        let numberOfParticles = (canvas.height * canvas.width) / 9000;
+        for (let i = 0; i < numberOfParticles; i++) {
+            let size = (Math.random() * 2) + 1;
+            let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+            let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+            let directionX = (Math.random() * .4) - .2;
+            let directionY = (Math.random() * .4) - .2;
+            let color = 'rgba(147, 197, 253, 0.8)';
+            particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+        }
+    }
+    function connect() {
+        let opacityValue = 1;
+        for (let a = 0; a < particlesArray.length; a++) {
+            for (let b = a; b < particlesArray.length; b++) {
+                let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
+                if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                    opacityValue = 1 - (distance / 20000);
+                    ctx.strokeStyle = `rgba(147, 197, 253, ${opacityValue})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                    ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+    function animateBlue() {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+        }
+        connect();
+        animationFrameId = requestAnimationFrame(animateBlue);
+    }
+    function stopAnimation() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+    }
+    function startAnimatedBg() {
+        stopAnimation();
+        initBlueAnimation();
+        animateBlue();
+    }
+    window.addEventListener('resize', () => {
+        startAnimatedBg();
+    });
+    startAnimatedBg();
+    </script>
+</body>
+</html>
