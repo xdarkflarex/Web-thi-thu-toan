@@ -20,6 +20,7 @@ import {
   ImagesSection,
   QuestionPreview,
 } from "./components";
+import { QuestionService } from "@/lib/question-service";
 
 
 export default function Page() {
@@ -41,6 +42,7 @@ export default function Page() {
       ),
       correctIndex: z.number().nullable().optional(),
       correctIndices: z.array(z.number()).optional(),
+      isSubmitting: z.boolean().optional(),
     })
     .superRefine((data, ctx) => {
       if (data.type === "multiple-choice") {
@@ -96,11 +98,13 @@ export default function Page() {
       images: [],
       correctIndex: 0,
       correctIndices: [],
+      isSubmitting: false,
     },
   });
 
   const { watch, setValue } = form;
   const images = watch("images");
+  const isSubmitting = watch("isSubmitting");
   const [isHorizontal, setIsHorizontal] = React.useState(true);
 
   React.useEffect(() => {
@@ -126,9 +130,46 @@ export default function Page() {
     setValue(`images.${idx}.name` as const, file.name);
   };
 
-  const onSubmit: SubmitHandler<FormValues> = (values) => {
-    // For now we just log; integrate backend as needed
-    console.log("Submit sample-question:", values);
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
+    try {
+      // Show loading state
+      form.setValue('isSubmitting', true);
+      
+      // Transform form data to match our service interface
+      const questionData = {
+        type: values.type,
+        category: values.category,
+        question: values.question,
+        solutionGuide: values.solutionGuide,
+        level: values.level,
+        answers: values.answers,
+        shortAnswer: values.shortAnswer,
+        images: values.images.filter(img => img.url).map(img => ({
+          url: img.url!,
+          label: img.label,
+          name: img.name,
+        })), // Only include images with URLs
+        correctIndex: values.correctIndex,
+        correctIndices: values.correctIndices,
+      };
+
+      // Create the question in Supabase
+      const createdQuestion = await QuestionService.createQuestion(questionData);
+      
+      console.log("Question created successfully:", createdQuestion);
+      
+      // Reset form after successful submission
+      form.reset();
+      
+      // Show success message (you can add a toast notification here)
+      alert("Question created successfully!");
+      
+    } catch (error) {
+      console.error("Error creating question:", error);
+      alert(`Error creating question: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      form.setValue('isSubmitting', false);
+    }
   };
 
   return (
@@ -185,11 +226,14 @@ export default function Page() {
               </Card>
 
               <div className="flex gap-2">
-                <Button type="submit">Save</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save"}
+                </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => form.reset()}
+                  disabled={isSubmitting}
                 >
                   Reset
                 </Button>
@@ -206,11 +250,14 @@ export default function Page() {
                 </CardContent>
               </Card>
               <div className="lg:hidden flex gap-2">
-                <Button type="submit">Save</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save"}
+                </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => form.reset()}
+                  disabled={isSubmitting}
                 >
                   Reset
                 </Button>
