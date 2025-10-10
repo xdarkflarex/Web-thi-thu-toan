@@ -19,13 +19,120 @@ import { Form } from "@/components/ui/form";
 import MathTextareaField from "@/components/form-field/math-textarea-field";
 import TextField from "@/components/form-field/text-field";
 import SelectField from "@/components/form-field/select-field";
+import HierarchySelectField, { HierarchyNode } from "@/components/form-field/hierarchy-select-field";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
+
+// Sample hierarchy data for categories
+const categoryData: HierarchyNode[] = [
+  {
+    id: "mathematics",
+    label: "Mathematics",
+    children: [
+      {
+        id: "algebra",
+        label: "Algebra",
+        children: [
+          { id: "linear-algebra", label: "Linear Algebra" },
+          { id: "abstract-algebra", label: "Abstract Algebra" },
+          { id: "polynomials", label: "Polynomials" },
+          { id: "quadratic-equations", label: "Quadratic Equations" },
+        ],
+      },
+      {
+        id: "geometry",
+        label: "Geometry",
+        children: [
+          { id: "euclidean-geometry", label: "Euclidean Geometry" },
+          { id: "analytical-geometry", label: "Analytical Geometry" },
+          { id: "differential-geometry", label: "Differential Geometry" },
+          { id: "trigonometry", label: "Trigonometry" },
+        ],
+      },
+      {
+        id: "calculus",
+        label: "Calculus",
+        children: [
+          { id: "differential-calculus", label: "Differential Calculus" },
+          { id: "integral-calculus", label: "Integral Calculus" },
+          { id: "multivariable-calculus", label: "Multivariable Calculus" },
+          { id: "limits", label: "Limits" },
+        ],
+      },
+      {
+        id: "statistics",
+        label: "Statistics",
+        children: [
+          { id: "descriptive-statistics", label: "Descriptive Statistics" },
+          { id: "probability", label: "Probability" },
+          { id: "inferential-statistics", label: "Inferential Statistics" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "physics",
+    label: "Physics",
+    children: [
+      {
+        id: "mechanics",
+        label: "Mechanics",
+        children: [
+          { id: "kinematics", label: "Kinematics" },
+          { id: "dynamics", label: "Dynamics" },
+          { id: "statics", label: "Statics" },
+        ],
+      },
+      {
+        id: "thermodynamics",
+        label: "Thermodynamics",
+        children: [
+          { id: "heat-transfer", label: "Heat Transfer" },
+          { id: "entropy", label: "Entropy" },
+        ],
+      },
+      {
+        id: "electromagnetism",
+        label: "Electromagnetism",
+        children: [
+          { id: "electric-fields", label: "Electric Fields" },
+          { id: "magnetic-fields", label: "Magnetic Fields" },
+          { id: "electromagnetic-waves", label: "Electromagnetic Waves" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "chemistry",
+    label: "Chemistry",
+    children: [
+      {
+        id: "organic-chemistry",
+        label: "Organic Chemistry",
+        children: [
+          { id: "hydrocarbons", label: "Hydrocarbons" },
+          { id: "functional-groups", label: "Functional Groups" },
+        ],
+      },
+      {
+        id: "inorganic-chemistry",
+        label: "Inorganic Chemistry",
+        children: [
+          { id: "periodic-table", label: "Periodic Table" },
+          { id: "chemical-bonding", label: "Chemical Bonding" },
+        ],
+      },
+    ],
+  },
+];
 
 export default function Page() {
   const schema = z
     .object({
       type: z.enum(["multiple-choice", "multiple-select", "short-answer"]),
+      category: z.string().min(1, "Category is required"),
       question: z.string().min(1, "Question is required"),
+      solutionGuide: z.string().optional(),
+      level: z.enum(["recognize", "understand", "apply"]),
       answers: z.array(z.string()).min(1, "At least one answer"),
       shortAnswer: z.string().optional(),
       images: z.array(
@@ -83,7 +190,10 @@ export default function Page() {
     resolver: zodResolver(schema),
     defaultValues: {
       type: "multiple-choice",
+      category: "",
       question: "Find the value of $x$ such that $x^2 - 5x + 6 = 0$.",
+      solutionGuide: "Factor the quadratic: $(x-2)(x-3)=0$ so $x=2$ or $x=3$.",
+      level: "recognize",
       answers: ["x = 1", "x = 2", "x = 3", "x = 6"],
       shortAnswer: "",
       images: [],
@@ -94,7 +204,10 @@ export default function Page() {
 
   const { control, watch, setValue } = form;
   const type = watch("type");
+  const category = watch("category");
   const question = watch("question");
+  const solutionGuide = watch("solutionGuide");
+  const level = watch("level");
   const answers = watch("answers");
   const shortAnswer = watch("shortAnswer");
   const images = watch("images");
@@ -174,6 +287,15 @@ export default function Page() {
                   <CardTitle>Editor</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <HierarchySelectField
+                    name="category"
+                    label="Category"
+                    placeholder="Select a category..."
+                    data={categoryData}
+                    searchable
+                    showPath
+                  />
+
                   <div className="grid gap-4 sm:grid-cols-2">
                     <SelectField
                       name="type"
@@ -188,12 +310,29 @@ export default function Page() {
                         { label: "Input short answer", value: "short-answer" },
                       ]}
                     />
+                    <SelectField
+                      name="level"
+                      label="Level"
+                      placeholder="Select level"
+                      items={[
+                        { label: "Recognize", value: "recognize" },
+                        { label: "Understand", value: "understand" },
+                        { label: "Apply", value: "apply" },
+                      ]}
+                    />
                   </div>
 
                   <MathTextareaField
                     name="question"
                     label="Question"
                     placeholder="Type your question here. Supports LaTeX with $...$ or \\(...\\)."
+                    hidePreview
+                  />
+
+                  <MathTextareaField
+                    name="solutionGuide"
+                    label="Solution Guide"
+                    placeholder="Type the solution steps. Supports LaTeX with $...$ or \\(...\\)."
                     hidePreview
                   />
 
@@ -416,6 +555,12 @@ export default function Page() {
                     }}
                   >
                     <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Category:</span> {category || "Not selected"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Level:</span> {level}
+                      </div>
                       <div className="text-base leading-relaxed whitespace-pre-wrap break-words">
                         <MathJax dynamic>{question}</MathJax>
                       </div>
@@ -472,6 +617,17 @@ export default function Page() {
                           </div>
                         </div>
                       )}
+
+                      <div className="space-y-2">
+                        <Label>Solution Guide</Label>
+                        <div className="text-sm leading-relaxed whitespace-pre-wrap break-words rounded-md border p-2">
+                          {solutionGuide ? (
+                            <MathJax dynamic>{solutionGuide}</MathJax>
+                          ) : (
+                            <span className="text-muted-foreground">(empty)</span>
+                          )}
+                        </div>
+                      </div>
 
                       {images.length > 0 && (
                         <div className="space-y-2">
