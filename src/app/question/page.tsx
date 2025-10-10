@@ -24,6 +24,20 @@ export default function QuestionListing() {
   const [pageIndex, setPageIndex] = React.useState(0);
   const [pageSize] = React.useState(10);
   const [pageCount, setPageCount] = React.useState<number | undefined>(undefined);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+
+  const load = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const page = pageIndex + 1;
+      const take = pageSize;
+      const result = await QuestionService.getQuestions(page, take);
+      setData(result.items as Question[]);
+      setPageCount(result.pageCount);
+    } finally {
+      setLoading(false);
+    }
+  }, [pageIndex, pageSize]);
 
   const columns = React.useMemo<ColumnDef<Question>[]>(
     () => [
@@ -100,8 +114,23 @@ export default function QuestionListing() {
                   Copy ID
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.assign(`/question/${q.id}`)}>
-                  View
+                <DropdownMenuItem onClick={() => window.location.assign(`/question/create?id=${q.id}`)}>
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const ok = window.confirm("Delete this question?");
+                    if (!ok) return;
+                    try {
+                      setDeletingId(q.id);
+                      await QuestionService.deleteQuestion(q.id);
+                      await load();
+                    } finally {
+                      setDeletingId(null);
+                    }
+                  }}
+                >
+                  Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -109,21 +138,8 @@ export default function QuestionListing() {
         },
       },
     ],
-    []
+    [load]
   );
-
-  const load = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      const page = pageIndex + 1;
-      const take = pageSize;
-      const result = await QuestionService.getQuestions(page, take);
-      setData(result.items as Question[]);
-      setPageCount(result.pageCount);
-    } finally {
-      setLoading(false);
-    }
-  }, [pageIndex, pageSize]);
 
   React.useEffect(() => {
     load();
@@ -131,7 +147,12 @@ export default function QuestionListing() {
 
   return (
     <main className="container mx-auto max-w-7xl p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Questions</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Questions</h1>
+        <Button onClick={() => window.location.assign("/question/create")}>
+          Add Question
+        </Button>
+      </div>
       <DataTable<Question, unknown>
         columns={columns}
         data={data}
@@ -143,6 +164,7 @@ export default function QuestionListing() {
         onPageSizeChange={undefined}
       />
       {loading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
+      {deletingId ? <div className="text-sm text-muted-foreground">Deleting...</div> : null}
     </main>
   );
 }
