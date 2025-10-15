@@ -77,6 +77,36 @@ If you want to add user authentication:
 3. Update the RLS policies if needed
 4. Add auth components to your app
 
+## 8. Roles and RLS (Teacher/Admin/Student)
+
+This project includes a role-based access model:
+
+- Roles: `admin`, `teacher`, `student`
+- Table: `public.profiles` linked to `auth.users`
+- Helper: `public.has_role(role)`
+- RLS: public can read active questions; only teacher (owner) or admin can write
+
+To apply (if not already applied), re-run the SQL in `supabase-schema.sql`.
+
+Promote a user to teacher/admin:
+
+```sql
+update public.profiles set role = 'teacher' where id = 'USER_UUID';
+update public.profiles set role = 'admin' where id = 'USER_UUID';
+```
+
+Notes:
+
+- `questions.created_by` defaults to `auth.uid()`
+- Service role key bypasses RLS — only use on trusted server jobs
+- Client SDK will be constrained by RLS
+
+## 9. Guest Exam (No Login, No DB Writes)
+
+- Visit `/exam/guest` to take a randomized quiz without logging in.
+- The page fetches public active questions and keeps answers in browser memory.
+- No results are stored server-side.
+
 ## Troubleshooting
 
 ### Common Issues:

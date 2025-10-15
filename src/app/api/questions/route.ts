@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { QuestionService } from '@/lib/question-service'
+import { requireRole } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,15 +42,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await requireRole(['teacher', 'admin'])
     const body = await request.json()
     const question = await QuestionService.createQuestion(body)
     return NextResponse.json({ statusCode: 201, success: true, data: question, message: 'created' }, { status: 201 })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to create question'
+    const status = message === 'Forbidden' ? 401 : 500
     console.error('Error creating question:', error)
     return NextResponse.json(
-      { statusCode: 500, success: false, data: null, message },
-      { status: 500 }
+      { statusCode: status, success: false, data: null, message },
+      { status }
     )
   }
 }
