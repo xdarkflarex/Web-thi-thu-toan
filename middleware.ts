@@ -4,6 +4,13 @@ import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+  
+  // Debug logging for API routes
+  if (req.nextUrl.pathname.startsWith('/api/')) {
+    console.log('Middleware running on API route:', req.nextUrl.pathname)
+    console.log('Request cookies:', Object.fromEntries(req.cookies.getAll().map(c => [c.name, c.value])))
+  }
+  
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -12,8 +19,12 @@ export async function middleware(req: NextRequest) {
         get(name: string) {
           return req.cookies.get(name)?.value
         },
-        set() {},
-        remove() {},
+        set(name: string, value: string, options: Record<string, unknown>) {
+          res.cookies.set(name, value, options)
+        },
+        remove(name: string, options: Record<string, unknown>) {
+          res.cookies.set(name, '', { ...options, maxAge: 0 })
+        },
       },
     }
   )
@@ -54,7 +65,16 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/teacher/:path*', '/admin/:path*'],
+  // Run on all routes so Supabase can sync auth cookies for API and pages
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 }
 
 

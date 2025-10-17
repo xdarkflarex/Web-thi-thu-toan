@@ -42,7 +42,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireRole(['teacher', 'admin'])
+    console.log('POST /api/questions - Starting auth check')
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+    
+    const { user, role } = await requireRole(['teacher', 'admin'])
+    console.log('Auth check passed:', { userId: user?.id, email: user?.email, role })
+    
     const body = await request.json()
     const question = await QuestionService.createQuestion(body)
     return NextResponse.json({ statusCode: 201, success: true, data: question, message: 'created' }, { status: 201 })
@@ -50,6 +55,7 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : 'Failed to create question'
     const status = message === 'Forbidden' ? 401 : 500
     console.error('Error creating question:', error)
+    console.error('Error details:', { message, status, stack: error instanceof Error ? error.stack : undefined })
     return NextResponse.json(
       { statusCode: status, success: false, data: null, message },
       { status }

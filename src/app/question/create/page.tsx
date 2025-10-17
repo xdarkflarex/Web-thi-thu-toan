@@ -20,7 +20,8 @@ import {
   ImagesSection,
   QuestionPreview,
 } from "./components";
-import { QuestionService } from "@/lib/question-service";
+import { supabase } from "@/lib/supabase";
+ 
 
 
 export default function Page() {
@@ -132,11 +133,9 @@ export default function Page() {
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     try {
-      // Show loading state
       form.setValue('isSubmitting', true);
-      
-      // Transform form data to match our service interface
-      const questionData = {
+
+      const payload = {
         type: values.type,
         category: values.category,
         question: values.question,
@@ -144,28 +143,39 @@ export default function Page() {
         level: values.level,
         answers: values.answers,
         shortAnswer: values.shortAnswer,
-        images: values.images.filter(img => img.url).map(img => ({
-          url: img.url!,
-          label: img.label,
-          name: img.name,
-        })), // Only include images with URLs
+        images: values.images
+          .filter((img) => img.url)
+          .map((img) => ({ url: img.url as string, label: img.label, name: img.name })),
         correctIndex: values.correctIndex,
         correctIndices: values.correctIndices,
       };
 
-      // Create the question in Supabase
-      const createdQuestion = await QuestionService.createQuestion(questionData);
-      
-      console.log("Question created successfully:", createdQuestion);
-      
-      // Reset form after successful submission
+      // Get Supabase access token to authenticate API route
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      const res = await fetch('/api/questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json().catch(() => ({ success: false, message: 'Invalid server response' }));
+
+      if (!res.ok || !json?.success) {
+        const message = json?.message || `Request failed with status ${res.status}`;
+        throw new Error(message);
+      }
+
+      console.log('Question created successfully:', json.data);
       form.reset();
-      
-      // Show success message (you can add a toast notification here)
-      alert("Question created successfully!");
-      
+      alert('Question created successfully!');
     } catch (error) {
-      console.error("Error creating question:", error);
+      console.error('Error creating question:', error);
       alert(`Error creating question: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       form.setValue('isSubmitting', false);

@@ -1,8 +1,8 @@
-import { supabase } from './supabase'
+import { supabase, supabaseAdmin } from './supabase'
 import { Database } from '@/types/database'
 
 type Question = Database['public']['Tables']['questions']['Row']
-type QuestionInsert = Database['public']['Tables']['questions']['Insert']
+// type QuestionInsert = Database['public']['Tables']['questions']['Insert']
 type QuestionAnswer = Database['public']['Tables']['question_answers']['Row']
 type QuestionAnswerInsert = Database['public']['Tables']['question_answers']['Insert']
 type QuestionImage = Database['public']['Tables']['question_images']['Row']
@@ -34,12 +34,16 @@ export class QuestionService {
   // Create a new question with answers and images
   static async createQuestion(data: CreateQuestionData): Promise<QuestionWithRelations> {
     const { answers, images, ...questionData } = data
+    const client = supabaseAdmin ?? supabase
 
     // Start a transaction
-    const { data: question, error: questionError } = await supabase
+    const { data: question, error: questionError } = await client
       .from('questions')
       .insert({
-        ...questionData,
+        type: questionData.type,
+        category: questionData.category,
+        question: questionData.question,
+        level: questionData.level,
         solution_guide: questionData.solutionGuide,
         short_answer: questionData.shortAnswer,
         correct_index: questionData.correctIndex,
@@ -60,7 +64,7 @@ export class QuestionService {
         answer_order: index,
       }))
 
-      const { error: answersError } = await supabase
+      const { error: answersError } = await client
         .from('question_answers')
         .insert(answerInserts)
 
@@ -82,7 +86,7 @@ export class QuestionService {
         }))
 
       if (imageInserts.length > 0) {
-        const { error: imagesError } = await supabase
+        const { error: imagesError } = await client
           .from('question_images')
           .insert(imageInserts)
 
@@ -182,7 +186,10 @@ export class QuestionService {
     const { error: questionError } = await supabase
       .from('questions')
       .update({
-        ...questionData,
+        type: questionData.type,
+        category: questionData.category,
+        question: questionData.question,
+        level: questionData.level,
         solution_guide: questionData.solutionGuide,
         short_answer: questionData.shortAnswer,
         correct_index: questionData.correctIndex,
