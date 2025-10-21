@@ -21,10 +21,16 @@ import {
   QuestionPreview,
 } from "./components";
 import { supabase } from "@/lib/supabase";
+import { QuestionService } from "@/lib/question-service";
+import { useSearchParams } from "next/navigation";
  
 
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const questionId = searchParams.get('id');
+  const isEditMode = Boolean(questionId);
+
   const schema = z
     .object({
       type: z.enum(["multiple-choice", "multiple-select", "short-answer"]),
@@ -103,10 +109,51 @@ export default function Page() {
     },
   });
 
-  const { watch, setValue } = form;
+  const { watch, setValue, reset } = form;
   const images = watch("images");
   const isSubmitting = watch("isSubmitting");
   const [isHorizontal, setIsHorizontal] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(isEditMode);
+
+  // Load question data when in edit mode
+  React.useEffect(() => {
+    if (isEditMode && questionId) {
+      const loadQuestion = async () => {
+        try {
+          setIsLoading(true);
+          const question = await QuestionService.getQuestionById(questionId);
+          
+          // Transform the question data to match form structure
+          const formData = {
+            type: question.type,
+            category: question.category,
+            question: question.question,
+            solutionGuide: question.solution_guide || "",
+            level: question.level,
+            answers: question.answers?.map((answer: { answer_text: string }) => answer.answer_text) || [],
+            shortAnswer: question.short_answer || "",
+            images: question.images?.map((img: { image_url: string; image_label: string | null; image_name: string | null }) => ({
+              url: img.image_url,
+              label: img.image_label || "",
+              name: img.image_name || "",
+            })) || [],
+            correctIndex: question.correct_index,
+            correctIndices: question.correct_indices || [],
+            isSubmitting: false,
+          };
+          
+          reset(formData);
+        } catch (error) {
+          console.error('Error loading question:', error);
+          alert('Error loading question for editing');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      loadQuestion();
+    }
+  }, [isEditMode, questionId, reset]);
 
   React.useEffect(() => {
     return () => {
@@ -154,8 +201,11 @@ export default function Page() {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
 
-      const res = await fetch('/api/questions', {
-        method: 'POST',
+      const url = isEditMode ? `/api/questions/${questionId}` : '/api/questions';
+      const method = isEditMode ? 'PATCH' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
@@ -171,22 +221,44 @@ export default function Page() {
         throw new Error(message);
       }
 
-      console.log('Question created successfully:', json.data);
-      form.reset();
-      alert('Question created successfully!');
+      const action = isEditMode ? 'updated' : 'created';
+      console.log(`Question ${action} successfully:`, json.data);
+      
+      if (!isEditMode) {
+        form.reset();
+      }
+      
+      alert(`Question ${action} successfully!`);
     } catch (error) {
-      console.error('Error creating question:', error);
-      alert(`Error creating question: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} question:`, error);
+      alert(`Error ${isEditMode ? 'updating' : 'creating'} question: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       form.setValue('isSubmitting', false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-7xl py-8 space-y-8">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold tracking-tight mb-4">
+              Loading Question...
+            </h1>
+            <div className="text-muted-foreground">
+              Please wait while we load the question for editing.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-7xl py-8 space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Sample Question Builder
+          {isEditMode ? 'Edit Question' : 'Sample Question Builder'}
         </h1>
         <Button
           type="button"
@@ -236,14 +308,14 @@ export default function Page() {
               </Card>
 
               <div className="flex gap-2">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Save"}
+                <Button type="submit" disabled={isSubmitting || isLoading}>
+                  {isSubmitting ? (isEditMode ? "Updating..." : "Saving...") : (isEditMode ? "Update" : "Save")}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => form.reset()}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoading}
                 >
                   Reset
                 </Button>
@@ -260,14 +332,14 @@ export default function Page() {
                 </CardContent>
               </Card>
               <div className="lg:hidden flex gap-2">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Save"}
+                <Button type="submit" disabled={isSubmitting || isLoading}>
+                  {isSubmitting ? (isEditMode ? "Updating..." : "Saving...") : (isEditMode ? "Update" : "Save")}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => form.reset()}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoading}
                 >
                   Reset
                 </Button>

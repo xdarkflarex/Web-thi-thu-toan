@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { QuestionService } from '@/lib/question-service'
 import { requireRole } from '@/lib/auth'
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const question = await QuestionService.getQuestionById(params.id)
+    const { id } = await params
+    const question = await QuestionService.getQuestionById(id)
     return NextResponse.json({ statusCode: 200, success: true, data: question, message: 'success' })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Not found'
@@ -15,11 +16,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireRole(['teacher', 'admin'])
+    const { id } = await params
     const body = await req.json()
-    const updated = await QuestionService.updateQuestion(params.id, body)
+    const updated = await QuestionService.updateQuestion(id, body)
     return NextResponse.json({ statusCode: 200, success: true, data: updated, message: 'updated' })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to update'
@@ -31,10 +33,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireRole(['teacher', 'admin'])
-    await QuestionService.deleteQuestion(params.id)
+    const { id } = await params
+    await QuestionService.deleteQuestion(id)
     return NextResponse.json({ statusCode: 200, success: true, data: null, message: 'deleted' })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to delete'

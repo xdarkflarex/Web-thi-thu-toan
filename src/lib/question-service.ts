@@ -102,7 +102,8 @@ export class QuestionService {
 
   // Get a question by ID with all relations
   static async getQuestionById(id: string): Promise<QuestionWithRelations> {
-    const { data: question, error: questionError } = await supabase
+    const client = supabaseAdmin ?? supabase
+    const { data: question, error: questionError } = await client
       .from('questions')
       .select(`
         *,
@@ -130,7 +131,8 @@ export class QuestionService {
       level?: string
     }
   ) {
-    let base = supabase
+    const client = supabaseAdmin ?? supabase
+    let base = client
       .from('questions')
       .select(
         `
@@ -181,9 +183,10 @@ export class QuestionService {
   // Update a question
   static async updateQuestion(id: string, data: Partial<CreateQuestionData>): Promise<QuestionWithRelations> {
     const { answers, images, ...questionData } = data
+    const client = supabaseAdmin ?? supabase
 
     // Update the main question
-    const { error: questionError } = await supabase
+    const { error: questionError } = await client
       .from('questions')
       .update({
         type: questionData.type,
@@ -204,7 +207,7 @@ export class QuestionService {
     // Update answers if provided
     if (answers) {
       // Delete existing answers
-      await supabase
+      await client
         .from('question_answers')
         .delete()
         .eq('question_id', id)
@@ -217,7 +220,7 @@ export class QuestionService {
           answer_order: index,
         }))
 
-        const { error: answersError } = await supabase
+        const { error: answersError } = await client
           .from('question_answers')
           .insert(answerInserts)
 
@@ -230,7 +233,7 @@ export class QuestionService {
     // Update images if provided
     if (images) {
       // Delete existing images
-      await supabase
+      await client
         .from('question_images')
         .delete()
         .eq('question_id', id)
@@ -247,7 +250,7 @@ export class QuestionService {
         }))
 
       if (imageInserts.length > 0) {
-        const { error: imagesError } = await supabase
+        const { error: imagesError } = await client
           .from('question_images')
           .insert(imageInserts)
 
@@ -260,15 +263,38 @@ export class QuestionService {
     return this.getQuestionById(id)
   }
 
-  // Soft delete a question
+  // Delete a question and all related data
   static async deleteQuestion(id: string): Promise<void> {
-    const { error } = await supabase
+    const client = supabaseAdmin ?? supabase
+
+    // Delete related answers first (due to foreign key constraints)
+    const { error: answersError } = await client
+      .from('question_answers')
+      .delete()
+      .eq('question_id', id)
+
+    if (answersError) {
+      throw new Error(`Failed to delete answers: ${answersError.message}`)
+    }
+
+    // Delete related images
+    const { error: imagesError } = await client
+      .from('question_images')
+      .delete()
+      .eq('question_id', id)
+
+    if (imagesError) {
+      throw new Error(`Failed to delete images: ${imagesError.message}`)
+    }
+
+    // Finally delete the question itself
+    const { error: questionError } = await client
       .from('questions')
-      .update({ is_active: false })
+      .delete()
       .eq('id', id)
 
-    if (error) {
-      throw new Error(`Failed to delete question: ${error.message}`)
+    if (questionError) {
+      throw new Error(`Failed to delete question: ${questionError.message}`)
     }
   }
 }
