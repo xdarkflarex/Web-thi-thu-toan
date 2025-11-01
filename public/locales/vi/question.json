@@ -55,6 +55,11 @@
   "actions": "Hành động",
   "copyId": "Sao chép ID",
   "deleteQuestion": "Bạn có chắc muốn xóa câu hỏi này?",
-  "deleting": "Đang xóa..."
+  "deleting": "Đang xóa...",
+  "notSelected": "Chưa chọn",
+  "empty": "(trống)",
+  "correctLabel": "(đúng)",
+  "expectedShortAnswer": "Đáp án ngắn mong đợi",
+  "noLabel": "(không có nhãn)"
 }
 

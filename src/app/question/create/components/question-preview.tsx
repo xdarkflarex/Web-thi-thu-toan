@@ -1,4 +1,5 @@
 import { useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 
@@ -23,6 +24,7 @@ interface FormValues {
 
 export default function QuestionPreview() {
   const { watch } = useFormContext<FormValues>();
+  const { t } = useTranslation(['question']);
   const type = watch("type");
   const category = watch("category");
   const question = watch("question");
@@ -49,11 +51,11 @@ export default function QuestionPreview() {
     >
       <div className="space-y-3">
         <div className="text-sm text-muted-foreground">
-          <span className="font-medium">Category:</span>{" "}
-          {category || "Not selected"}
+          <span className="font-medium">{t("category")}:</span>{" "}
+          {category || t("notSelected")}
         </div>
         <div className="text-sm text-muted-foreground">
-          <span className="font-medium">Level:</span> {level}
+          <span className="font-medium">{t("level")}:</span> {level}
         </div>
         <div className="text-base leading-relaxed whitespace-pre-wrap break-words">
           <MathJax dynamic>{question}</MathJax>
@@ -66,10 +68,10 @@ export default function QuestionPreview() {
                   {String.fromCharCode(65 + i)}.
                 </span>{" "}
                 {ans || (
-                  <span className="text-muted-foreground">(empty)</span>
+                  <span className="text-muted-foreground">{t("empty")}</span>
                 )}
                 {correctIndex === i ? (
-                  <span className="ml-2 text-emerald-600">(correct)</span>
+                  <span className="ml-2 text-emerald-600">{t("correctLabel")}</span>
                 ) : null}
               </li>
             ))}
@@ -82,40 +84,40 @@ export default function QuestionPreview() {
                   {String.fromCharCode(65 + i)}.
                 </span>{" "}
                 {ans || (
-                  <span className="text-muted-foreground">(empty)</span>
+                  <span className="text-muted-foreground">{t("empty")}</span>
                 )}
                 {Array.isArray(correctIndices) &&
                 correctIndices.includes(i) ? (
-                  <span className="ml-2 text-emerald-600">(correct)</span>
+                  <span className="ml-2 text-emerald-600">{t("correctLabel")}</span>
                 ) : null}
               </li>
             ))}
           </ul>
         ) : (
           <div className="space-y-2">
-            <Label>Expected short answer</Label>
+            <Label>{t("expectedShortAnswer")}</Label>
             <div className="rounded-md border p-2 text-sm">
               {shortAnswer || (
-                <span className="text-muted-foreground">(empty)</span>
+                <span className="text-muted-foreground">{t("empty")}</span>
               )}
             </div>
           </div>
         )}
 
         <div className="space-y-2">
-          <Label>Solution Guide</Label>
+          <Label>{t("solutionGuide")}</Label>
           <div className="text-sm leading-relaxed whitespace-pre-wrap break-words rounded-md border p-2">
             {solutionGuide ? (
               <MathJax dynamic>{solutionGuide}</MathJax>
             ) : (
-              <span className="text-muted-foreground">(empty)</span>
+              <span className="text-muted-foreground">{t("empty")}</span>
             )}
           </div>
         </div>
 
         {images.length > 0 && (
           <div className="space-y-2">
-            <Label>Images</Label>
+            <Label>{t("images")}</Label>
             <div className="grid gap-4 sm:grid-cols-2">
               {images.map((img, i) => (
                 <figure key={i} className="rounded-md border p-2">
@@ -130,7 +132,7 @@ export default function QuestionPreview() {
                     <div className="aspect-video w-full rounded bg-muted" />
                   )}
                   <figcaption className="mt-2 text-sm text-muted-foreground">
-                    {img.label || img.name || "(no label)"}
+                    {img.label || img.name || t("noLabel")}
                   </figcaption>
                 </figure>
               ))}

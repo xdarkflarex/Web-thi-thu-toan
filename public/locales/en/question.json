@@ -55,6 +55,11 @@
   "actions": "Actions",
   "copyId": "Copy ID",
   "deleteQuestion": "Are you sure you want to delete this question?",
-  "deleting": "Deleting..."
+  "deleting": "Deleting...",
+  "notSelected": "Not selected",
+  "empty": "(empty)",
+  "correctLabel": "(correct)",
+  "expectedShortAnswer": "Expected short answer",
+  "noLabel": "(no label)"
 }
 
