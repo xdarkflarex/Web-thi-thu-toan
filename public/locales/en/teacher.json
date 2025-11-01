@@ -1,0 +1,25 @@
+{
+  "legacyFormat": "Compose in legacy format",
+  "type": "Type",
+  "multipleChoice": "Multiple choice (4 options)",
+  "trueFalse": "True/False",
+  "shortAnswer": "Short answer",
+  "latexHint": "Type LaTeX between $...$ or \\( ... \\).",
+  "difficulty": "Difficulty",
+  "recognize": "Recognize",
+  "understand": "Understand",
+  "apply": "Apply",
+  "tagSlugs": "Tag slugs (comma separated)",
+  "tagSlugsPlaceholder": "e.g.: tinh-don-dieu-cua-ham-so, nb-dong-bien-nghich-bien",
+  "saveQuestion": "Save question",
+  "creatingQuestion": "Creating question...",
+  "questionCreatedSuccess": "Question created successfully",
+  "error": "Error",
+  "databaseConfigRequired": "DATABASE_URL and migration are required before creating questions.",
+  "preview": "Preview",
+  "question": "Question",
+  "enterAnswer": "Enter answer...",
+  "suggestedTags": "Suggested tags (taxonomy)",
+  "recentQuestions": "Recently created questions"
+}
+

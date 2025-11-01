@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import HierarchySelectField, {
   HierarchyNode,
 } from "@/components/form-field/hierarchy-select-field";
@@ -106,11 +107,13 @@ export const categoryData: HierarchyNode[] = [
 ];
 
 export default function CategoryField() {
+  const { t } = useTranslation(['common', 'question']);
+  
   return (
     <HierarchySelectField
       name="category"
-      label="Category"
-      placeholder="Select a category..."
+      label={t('category', { ns: 'question' })}
+      placeholder={t('selectCategory', { ns: 'question' })}
       data={categoryData}
       searchable
       showPath

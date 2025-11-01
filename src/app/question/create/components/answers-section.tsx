@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ interface FormValues {
 }
 
 export default function AnswersSection() {
+  const { t } = useTranslation(['common', 'question']);
   const { control, watch, setValue } = useFormContext<FormValues>();
   const type = watch("type");
   const answers = watch("answers");
@@ -28,14 +30,14 @@ export default function AnswersSection() {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Answers (choose one)</Label>
+          <Label>{t('answersChooseOne', { ns: 'question' })}</Label>
           <Button
             type="button"
             size="sm"
             variant="secondary"
             onClick={() => answersArray.append("")}
           >
-            Add answer
+            {t('addAnswer', { ns: 'question' })}
           </Button>
         </div>
 
@@ -50,11 +52,11 @@ export default function AnswersSection() {
             <div key={i} className="flex items-center gap-2">
               <RadioGroupItem id={`correct-${i}`} value={String(i)} />
               <label htmlFor={`correct-${i}`} className="sr-only">
-                Correct
+                {t('correct', { ns: 'question' })}
               </label>
               <TextField
                 name={`answers.${i}`}
-                placeholder={`Answer ${String.fromCharCode(65 + i)}`}
+                placeholder={`${t('answer', { ns: 'question' })} ${String.fromCharCode(65 + i)}`}
               />
               <Button
                 type="button"
@@ -63,7 +65,7 @@ export default function AnswersSection() {
                 onClick={() => answersArray.remove(i)}
                 disabled={answers.length <= 1}
               >
-                Remove
+                {t('remove', { ns: 'question' })}
               </Button>
             </div>
           ))}
@@ -76,14 +78,14 @@ export default function AnswersSection() {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Answers (choose many)</Label>
+          <Label>{t('answersChooseMany', { ns: 'question' })}</Label>
           <Button
             type="button"
             size="sm"
             variant="secondary"
             onClick={() => answersArray.append("")}
           >
-            Add answer
+            {t('addAnswer', { ns: 'question' })}
           </Button>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -109,11 +111,11 @@ export default function AnswersSection() {
                   }}
                 />
                 <label htmlFor={`correct-multi-${i}`} className="sr-only">
-                  Correct
+                  {t('correct', { ns: 'question' })}
                 </label>
                 <TextField
                   name={`answers.${i}`}
-                  placeholder={`Answer ${String.fromCharCode(65 + i)}`}
+                  placeholder={`${t('answer', { ns: 'question' })} ${String.fromCharCode(65 + i)}`}
                 />
                 <Button
                   type="button"
@@ -131,7 +133,7 @@ export default function AnswersSection() {
                   }}
                   disabled={answers.length <= 1}
                 >
-                  Remove
+                  {t('remove', { ns: 'question' })}
                 </Button>
               </div>
             );
@@ -144,8 +146,8 @@ export default function AnswersSection() {
   return (
     <TextField
       name="shortAnswer"
-      label="Short Answer"
-      placeholder="Type expected short answer"
+      label={t('shortAnswer', { ns: 'question' })}
+      placeholder={t('typeExpectedAnswer', { ns: 'question' })}
     />
   );
 }

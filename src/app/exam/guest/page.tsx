@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -45,6 +46,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function GuestExamPage() {
+  const { t } = useTranslation(['common', 'exam']);
   const [loading, setLoading] = useState(true)
   const [questions, setQuestions] = useState<Question[]>([])
   const [answers, setAnswers] = useState<QuizState>({})
@@ -65,7 +67,7 @@ export default function GuestExamPage() {
         const picked = shuffle(items).slice(0, 10)
         setQuestions(picked)
       } catch (e) {
-        setError('Failed to load questions')
+        setError(t('failedToLoad', { ns: 'exam' }))
       } finally {
         if (!abort) setLoading(false)
       }
@@ -101,7 +103,7 @@ export default function GuestExamPage() {
   if (loading) {
     return (
       <div className="container mx-auto max-w-3xl p-4">
-        <div className="flex items-center gap-3 text-muted-foreground"><Spinner size="sm" /> Loading guest exam…</div>
+        <div className="flex items-center gap-3 text-muted-foreground"><Spinner size="sm" /> {t('loadingGuestExam', { ns: 'exam' })}</div>
       </div>
     )
   }
@@ -111,7 +113,7 @@ export default function GuestExamPage() {
       <div className="container mx-auto max-w-3xl p-4">
         <Card>
           <CardHeader>
-            <CardTitle>Guest exam</CardTitle>
+            <CardTitle>{t('guestExam', { ns: 'exam' })}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-red-500">{error}</p>
@@ -125,11 +127,11 @@ export default function GuestExamPage() {
     <div className="container mx-auto max-w-3xl p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Guest exam (no login required)</CardTitle>
+          <CardTitle>{t('guestExamTitle', { ns: 'exam' })}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Your selections are kept only in your browser and are not saved to the server.
+            {t('description', { ns: 'exam' })}
           </p>
           <Separator className="my-4" />
 
@@ -197,7 +199,7 @@ export default function GuestExamPage() {
                 {q.type === 'short-answer' && (
                   <input
                     className="w-full border rounded px-3 py-2"
-                    placeholder="Your answer"
+                    placeholder={t('yourAnswer', { ns: 'exam' })}
                     value={(answers[q.id] as string | undefined) ?? ''}
                     onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
                   />
@@ -209,19 +211,19 @@ export default function GuestExamPage() {
                       const ans = answers[q.id]
                       if (q.type === 'multiple-choice' && typeof ans === 'number' && q.correct_index !== null) {
                         const ok = ans === q.correct_index
-                        return <span className={ok ? 'text-green-600' : 'text-red-600'}>{ok ? 'Correct' : 'Incorrect'}</span>
+                        return <span className={ok ? 'text-green-600' : 'text-red-600'}>{ok ? t('correct', { ns: 'exam' }) : t('incorrect', { ns: 'exam' })}</span>
                       }
                       if (q.type === 'multiple-select' && Array.isArray(ans) && Array.isArray(q.correct_indices)) {
                         const a = [...ans].sort().join(',')
                         const b = [...q.correct_indices].sort().join(',')
                         const ok = a === b
-                        return <span className={ok ? 'text-green-600' : 'text-red-600'}>{ok ? 'Correct' : 'Incorrect'}</span>
+                        return <span className={ok ? 'text-green-600' : 'text-red-600'}>{ok ? t('correct', { ns: 'exam' }) : t('incorrect', { ns: 'exam' })}</span>
                       }
                       if (q.type === 'short-answer' && typeof ans === 'string' && q.short_answer) {
                         const ok = ans.trim().toLowerCase() === q.short_answer.trim().toLowerCase()
-                        return <span className={ok ? 'text-green-600' : 'text-red-600'}>{ok ? 'Correct' : 'Incorrect'}</span>
+                        return <span className={ok ? 'text-green-600' : 'text-red-600'}>{ok ? t('correct', { ns: 'exam' }) : t('incorrect', { ns: 'exam' })}</span>
                       }
-                      return <span className="text-muted-foreground">No answer</span>
+                      return <span className="text-muted-foreground">{t('noAnswer', { ns: 'exam' })}</span>
                     })()}
                   </div>
                 )}
@@ -233,12 +235,12 @@ export default function GuestExamPage() {
 
           <div className="flex items-center gap-3 mt-6">
             {!submitted ? (
-              <Button onClick={() => setSubmitted(true)}>Submit</Button>
+              <Button onClick={() => setSubmitted(true)}>{t('submit', { ns: 'exam' })}</Button>
             ) : (
               <>
-                <Button onClick={reset} variant="secondary">Reset</Button>
+                <Button onClick={reset} variant="secondary">{t('reset', { ns: 'exam' })}</Button>
                 {score && (
-                  <span className="text-sm text-muted-foreground">Score: {score.correct} / {score.total}</span>
+                  <span className="text-sm text-muted-foreground">{t('score', { ns: 'exam' })}: {score.correct} / {score.total}</span>
                 )}
               </>
             )}

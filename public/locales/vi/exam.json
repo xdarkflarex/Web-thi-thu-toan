@@ -1,0 +1,15 @@
+{
+  "guestExam": "Thi thử cho khách",
+  "guestExamTitle": "Thi thử cho khách (không cần đăng nhập)",
+  "loadingGuestExam": "Đang tải đề thi cho khách...",
+  "description": "Các lựa chọn của bạn chỉ được lưu trong trình duyệt và không được lưu lên máy chủ.",
+  "yourAnswer": "Câu trả lời của bạn",
+  "correct": "Đúng",
+  "incorrect": "Sai",
+  "noAnswer": "Chưa có câu trả lời",
+  "submit": "Nộp bài",
+  "reset": "Đặt lại",
+  "score": "Điểm",
+  "failedToLoad": "Không thể tải câu hỏi"
+}
+
