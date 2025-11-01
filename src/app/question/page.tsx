@@ -20,7 +20,7 @@ import { Database } from "@/types/database";
 type Question = Database["public"]["Tables"]["questions"]["Row"];
 
 export default function QuestionListing() {
-  const { t } = useTranslation(['common', 'question']);
+  const { t } = useTranslation(['common', 'question', 'teacher', 'category']);
   const [data, setData] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -54,7 +54,14 @@ export default function QuestionListing() {
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div className="capitalize">{row.getValue("category")}</div>,
+        cell: ({ row }) => {
+          const categoryPath = row.getValue("category") as string;
+          // Translate category path (e.g., "mathematics/algebra" or just "algebra")
+          const categoryParts = categoryPath.split('/');
+          const lastPart = categoryParts[categoryParts.length - 1];
+          const translated = t(lastPart, { ns: 'category', defaultValue: categoryPath });
+          return <div>{translated}</div>;
+        },
       },
       {
         accessorKey: "type",
@@ -67,7 +74,15 @@ export default function QuestionListing() {
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div className="capitalize">{row.getValue("type")}</div>,
+        cell: ({ row }) => {
+          const type = row.getValue("type") as string;
+          const typeMap: Record<string, string> = {
+            'multiple-choice': t('chooseOneAnswer', { ns: 'question' }),
+            'multiple-select': t('chooseManyAnswers', { ns: 'question' }),
+            'short-answer': t('inputShortAnswer', { ns: 'question' }),
+          };
+          return <div>{typeMap[type] || type}</div>;
+        },
       },
       {
         accessorKey: "level",
@@ -80,7 +95,15 @@ export default function QuestionListing() {
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div className="capitalize">{row.getValue("level")}</div>,
+        cell: ({ row }) => {
+          const level = row.getValue("level") as string;
+          const levelMap: Record<string, string> = {
+            'recognize': t('recognize', { ns: 'teacher' }),
+            'understand': t('understand', { ns: 'teacher' }),
+            'apply': t('apply', { ns: 'teacher' }),
+          };
+          return <div>{levelMap[level] || level}</div>;
+        },
       },
       {
         accessorKey: "question",
@@ -140,7 +163,7 @@ export default function QuestionListing() {
         },
       },
     ],
-    [load]
+    [t, load]
   );
 
   React.useEffect(() => {

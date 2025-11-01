@@ -12,6 +12,7 @@ const loadTranslations = (locale: string) => {
       exam: require(`../../public/locales/${locale}/exam.json`),
       student: require(`../../public/locales/${locale}/student.json`),
       teacher: require(`../../public/locales/${locale}/teacher.json`),
+      category: require(`../../public/locales/${locale}/category.json`),
     };
   } catch (error) {
     console.warn(`Failed to load some translations for locale: ${locale}`, error);
@@ -41,7 +42,7 @@ i18n
     },
     
     defaultNS: 'common',
-    ns: ['common', 'auth', 'navigation', 'question', 'exam', 'student', 'teacher'],
+    ns: ['common', 'auth', 'navigation', 'question', 'exam', 'student', 'teacher', 'category'],
   });
 
 export default i18n;
