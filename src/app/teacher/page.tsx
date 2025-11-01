@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type QuestionType = "MCQ4" | "TRUE_FALSE" | "SHORT_ANSWER";
 type Difficulty = "NHAN_BIET" | "THONG_HIEU" | "VAN_DUNG";
@@ -43,6 +44,7 @@ function parseLegacy(text: string, legacyType: "multiple" | "truefalse" | "short
 }
 
 export default function TeacherIntegrated() {
+  const { t } = useTranslation(['common', 'teacher']);
   const [legacyType, setLegacyType] = useState<"multiple"|"truefalse"|"short">("multiple");
   const [legacyText, setLegacyText] = useState(typeSamples["multiple"]);
   const [difficulty, setDifficulty] = useState<Difficulty>("NHAN_BIET");
@@ -71,7 +73,7 @@ export default function TeacherIntegrated() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setStatusMsg("Đang tạo câu hỏi...");
+    setStatusMsg(t('creatingQuestion', { ns: 'teacher' }));
     try {
       const body: any = {
         stem: parsed.stem,
@@ -84,46 +86,46 @@ export default function TeacherIntegrated() {
       if (parsed.answers) body.answers = parsed.answers;
       const res = await fetch("/api/questions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Tạo câu hỏi thất bại");
-      setStatusMsg("Tạo câu hỏi thành công: " + data.id);
+      if (!res.ok) throw new Error(data?.error || t('error', { ns: 'teacher' }));
+      setStatusMsg(t('questionCreatedSuccess', { ns: 'teacher' }) + ": " + data.id);
     } catch (err: any) {
-      setStatusMsg("Lỗi: " + err.message);
+      setStatusMsg(t('error', { ns: 'teacher' }) + ": " + err.message);
     }
   }
 
   return (
     <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="bg-white rounded border p-4">
-        <h2 className="font-semibold mb-3">Soạn theo định dạng legacy</h2>
-        <label className="block text-sm mb-1">Loại</label>
+        <h2 className="font-semibold mb-3">{t('legacyFormat', { ns: 'teacher' })}</h2>
+        <label className="block text-sm mb-1">{t('type', { ns: 'teacher' })}</label>
         <select className="border p-2 mb-2" value={legacyType} onChange={e => { const v = e.target.value as any; setLegacyType(v); setLegacyText(typeSamples[v]); }}>
-          <option value="multiple">Trắc nghiệm 4 phương án</option>
-          <option value="truefalse">Đúng/Sai</option>
-          <option value="short">Trả lời ngắn</option>
+          <option value="multiple">{t('multipleChoice', { ns: 'teacher' })}</option>
+          <option value="truefalse">{t('trueFalse', { ns: 'teacher' })}</option>
+          <option value="short">{t('shortAnswer', { ns: 'teacher' })}</option>
         </select>
         <textarea className="w-full border p-2" rows={12} value={legacyText} onChange={e => setLegacyText(e.target.value)} />
-        <p className="text-xs text-gray-600 mt-2">Gõ LaTeX giữa $...$ hoặc \\( ... \\).</p>
+        <p className="text-xs text-gray-600 mt-2">{t('latexHint', { ns: 'teacher' })}</p>
         <div className="mt-3">
-          <label className="block text-sm mb-1">Mức độ</label>
+          <label className="block text-sm mb-1">{t('difficulty', { ns: 'teacher' })}</label>
           <select className="border p-2" value={difficulty} onChange={e => setDifficulty(e.target.value as Difficulty)}>
-            <option value="NHAN_BIET">Nhận biết</option>
-            <option value="THONG_HIEU">Thông hiểu</option>
-            <option value="VAN_DUNG">Vận dụng</option>
+            <option value="NHAN_BIET">{t('recognize', { ns: 'teacher' })}</option>
+            <option value="THONG_HIEU">{t('understand', { ns: 'teacher' })}</option>
+            <option value="VAN_DUNG">{t('apply', { ns: 'teacher' })}</option>
           </select>
         </div>
         <div className="mt-3">
-          <label className="block text-sm mb-1">Tag slugs (phân cách bởi dấu phẩy)</label>
-          <input className="w-full border p-2" placeholder="vd: tinh-don-dieu-cua-ham-so, nb-dong-bien-nghich-bien" value={tagSlugs} onChange={e => setTagSlugs(e.target.value)} />
+          <label className="block text-sm mb-1">{t('tagSlugs', { ns: 'teacher' })}</label>
+          <input className="w-full border p-2" placeholder={t('tagSlugsPlaceholder', { ns: 'teacher' })} value={tagSlugs} onChange={e => setTagSlugs(e.target.value)} />
         </div>
-        <button onClick={submit as any} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Lưu câu hỏi</button>
+        <button onClick={submit as any} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">{t('saveQuestion', { ns: 'teacher' })}</button>
         {statusMsg && <p className="text-sm mt-2">{statusMsg}</p>}
-        <p className="text-sm text-gray-600">Cần cấu hình DATABASE_URL và migrate trước khi tạo câu hỏi.</p>
+        <p className="text-sm text-gray-600">{t('databaseConfigRequired', { ns: 'teacher' })}</p>
       </div>
 
       <div className="bg-white rounded border p-4">
-        <h2 className="font-semibold mb-3">Preview</h2>
+        <h2 className="font-semibold mb-3">{t('preview', { ns: 'teacher' })}</h2>
         <div className="mb-3">
-          <div className="font-semibold mb-2">Câu hỏi</div>
+          <div className="font-semibold mb-2">{t('question', { ns: 'teacher' })}</div>
           <div className="math-latex">{parsed.stem}</div>
         </div>
         {parsed.type === "MCQ4" && (
@@ -149,14 +151,14 @@ export default function TeacherIntegrated() {
         )}
         {parsed.type === "SHORT_ANSWER" && (
           <div>
-            <input type="text" className="border p-2 w-3/4" placeholder="Nhập đáp án..." />
+            <input type="text" className="border p-2 w-3/4" placeholder={t('enterAnswer', { ns: 'teacher' })} />
           </div>
         )}
       </div>
 
       <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded border p-4">
-          <h3 className="font-semibold mb-2">Gợi ý tag (taxonomy)</h3>
+          <h3 className="font-semibold mb-2">{t('suggestedTags', { ns: 'teacher' })}</h3>
           <div className="flex flex-wrap gap-2">
             {suggest.map(s => (
               <button key={s.slug} type="button" className="px-3 py-1 border rounded" onClick={() => setTagSlugs(v => v ? `${v}, ${s.slug}` : s.slug)}>{s.name}</button>
@@ -164,7 +166,7 @@ export default function TeacherIntegrated() {
           </div>
         </div>
         <div className="bg-white rounded border p-4">
-          <h3 className="font-semibold mb-2">Câu hỏi mới tạo</h3>
+          <h3 className="font-semibold mb-2">{t('recentQuestions', { ns: 'teacher' })}</h3>
           <ul className="list-disc pl-5">
             {recent.map((q: any) => (
               <li key={q.id}><span className="text-xs text-gray-600">[{q.type} - {q.difficulty}]</span> {q.stem}</li>

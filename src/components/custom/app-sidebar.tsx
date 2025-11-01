@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Home, Layers3, Settings, Users2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Calendar, Home, Layers3, Settings, Users2, FolderTree } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   Sidebar,
@@ -16,8 +17,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function AppSidebar() {
+  const { t } = useTranslation(['common', 'navigation']);
   const [isAuthed, setIsAuthed] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   type Role = 'admin' | 'teacher' | 'student'
@@ -70,18 +73,19 @@ export function AppSidebar() {
   if (!isAuthed) return null;
 
   const items = [
-    { title: "Home", url: "/", icon: Home, show: true },
-    { title: "Questions", url: "/question", icon: Layers3, show: role === 'teacher' || role === 'admin' },
-    { title: "Students", url: "/student", icon: Users2, show: true },
-    { title: "Calendar", url: "/examples/tree", icon: Calendar, show: true },
-    { title: "Settings", url: "/teacher", icon: Settings, show: role === 'teacher' || role === 'admin' },
+    { title: t('home', { ns: 'navigation' }), url: "/", icon: Home, show: true },
+    { title: t('questions', { ns: 'navigation' }), url: "/question", icon: Layers3, show: role === 'teacher' || role === 'admin' },
+    { title: t('categories', { ns: 'navigation' }), url: "/teacher/categories", icon: FolderTree, show: role === 'teacher' || role === 'admin' },
+    { title: t('students', { ns: 'navigation' }), url: "/student", icon: Users2, show: true },
+    { title: t('calendar', { ns: 'navigation' }), url: "/examples/tree", icon: Calendar, show: true },
+    { title: t('settings', { ns: 'navigation' }), url: "/teacher", icon: Settings, show: role === 'teacher' || role === 'admin' },
   ];
   return (
     <Sidebar>
       <SidebarHeader />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('menu')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.filter((i) => i.show).map((item) => (
@@ -99,19 +103,24 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center justify-between gap-2 px-2 py-1 text-sm">
-          <span className="truncate" title={email}>{email}</span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              window.location.assign("/auth/sign-in");
-            }}
-          >
-            Logout
-          </Button>
+        <div className="space-y-2 px-2 py-1">
+          <div className="flex justify-center">
+            <LanguageSwitcher />
+          </div>
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <span className="truncate" title={email}>{email}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.assign("/auth/sign-in");
+              }}
+            >
+              {t('logout', { ns: 'navigation' })}
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

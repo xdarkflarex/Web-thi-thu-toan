@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 export default function SignInPage() {
+  const { t } = useTranslation(['common', 'auth']);
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -38,7 +41,7 @@ export default function SignInPage() {
       if (error) throw error
       router.replace('/')
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Sign in failed'
+      const msg = err instanceof Error ? err.message : t('signInFailed', { ns: 'auth' })
       setError(msg)
     } finally {
       setLoading(false)
@@ -62,7 +65,7 @@ export default function SignInPage() {
         router.replace('/')
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Sign up failed'
+      const msg = err instanceof Error ? err.message : t('signUpFailed', { ns: 'auth' })
       setError(msg)
     } finally {
       setLoading(false)
@@ -71,39 +74,42 @@ export default function SignInPage() {
 
   return (
     <div className="container mx-auto max-w-md p-4">
+      <div className="flex justify-end mb-4">
+        <LanguageSwitcher />
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle>{mode === 'signin' ? 'Sign in' : 'Create account'}</CardTitle>
+          <CardTitle>{mode === 'signin' ? t('signIn', { ns: 'auth' }) : t('signUp', { ns: 'auth' })}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={mode === 'signin' ? signInWithEmailPassword : signUpWithEmailPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email', { ns: 'auth' })}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('emailPlaceholder', { ns: 'auth' })}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('password', { ns: 'auth' })}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder', { ns: 'auth' })}
                 required
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? (
-                <span className="inline-flex items-center gap-2"><Spinner /> {mode === 'signin' ? 'Signing in…' : 'Creating account…'}</span>
+                <span className="inline-flex items-center gap-2"><Spinner /> {mode === 'signin' ? t('signingIn', { ns: 'auth' }) : t('creatingAccount', { ns: 'auth' })}</span>
               ) : (
-                (mode === 'signin' ? 'Sign in' : 'Create account')
+                (mode === 'signin' ? t('signIn', { ns: 'auth' }) : t('signUp', { ns: 'auth' }))
               )}
             </Button>
             <button
@@ -112,13 +118,13 @@ export default function SignInPage() {
               onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
               disabled={loading}
             >
-              {mode === 'signin' ? "Don't have an account? Create one" : 'Have an account? Sign in'}
+              {mode === 'signin' ? t('dontHaveAccount', { ns: 'auth' }) : t('haveAccount', { ns: 'auth' })}
             </button>
           </form>
           {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
           <p className="text-xs text-muted-foreground mt-6">
-            Teachers/Admins can sign in to manage content. Guests can take an exam at <code>/exam/guest</code> without signing in.
+            {t('description', { ns: 'auth' })}
           </p>
         </CardContent>
       </Card>

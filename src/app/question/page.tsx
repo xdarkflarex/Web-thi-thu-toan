@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import { Database } from "@/types/database";
 type Question = Database["public"]["Tables"]["questions"]["Row"];
 
 export default function QuestionListing() {
+  const { t } = useTranslation(['common', 'question', 'teacher', 'category']);
   const [data, setData] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -48,11 +50,18 @@ export default function QuestionListing() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Category
+            {t('category', { ns: 'question' })}
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div className="capitalize">{row.getValue("category")}</div>,
+        cell: ({ row }) => {
+          const categoryPath = row.getValue("category") as string;
+          // Translate category path (e.g., "mathematics/algebra" or just "algebra")
+          const categoryParts = categoryPath.split('/');
+          const lastPart = categoryParts[categoryParts.length - 1];
+          const translated = t(lastPart, { ns: 'category', defaultValue: categoryPath });
+          return <div>{translated}</div>;
+        },
       },
       {
         accessorKey: "type",
@@ -61,11 +70,19 @@ export default function QuestionListing() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Type
+            {t('questionType', { ns: 'question' })}
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div className="capitalize">{row.getValue("type")}</div>,
+        cell: ({ row }) => {
+          const type = row.getValue("type") as string;
+          const typeMap: Record<string, string> = {
+            'multiple-choice': t('chooseOneAnswer', { ns: 'question' }),
+            'multiple-select': t('chooseManyAnswers', { ns: 'question' }),
+            'short-answer': t('inputShortAnswer', { ns: 'question' }),
+          };
+          return <div>{typeMap[type] || type}</div>;
+        },
       },
       {
         accessorKey: "level",
@@ -74,11 +91,19 @@ export default function QuestionListing() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Level
+            {t('level', { ns: 'question' })}
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div className="capitalize">{row.getValue("level")}</div>,
+        cell: ({ row }) => {
+          const level = row.getValue("level") as string;
+          const levelMap: Record<string, string> = {
+            'recognize': t('recognize', { ns: 'teacher' }),
+            'understand': t('understand', { ns: 'teacher' }),
+            'apply': t('apply', { ns: 'teacher' }),
+          };
+          return <div>{levelMap[level] || level}</div>;
+        },
       },
       {
         accessorKey: "question",
@@ -87,7 +112,7 @@ export default function QuestionListing() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Question
+            {t('question', { ns: 'question' })}
             <ArrowUpDown />
           </Button>
         ),
@@ -104,22 +129,22 @@ export default function QuestionListing() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
+                  <span className="sr-only">{t('openMenu', { ns: 'question' })}</span>
                   <MoreHorizontal />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('actions', { ns: 'question' })}</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(q.id)}>
-                  Copy ID
+                  {t('copyId', { ns: 'question' })}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => window.location.assign(`/question/create?id=${q.id}`)}>
-                  Edit
+                  {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={async () => {
-                    const ok = window.confirm("Delete this question?");
+                    const ok = window.confirm(t('deleteQuestion', { ns: 'question' }));
                     if (!ok) return;
                     try {
                       setDeletingId(q.id);
@@ -130,7 +155,7 @@ export default function QuestionListing() {
                     }
                   }}
                 >
-                  Delete
+                  {t('common.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -138,7 +163,7 @@ export default function QuestionListing() {
         },
       },
     ],
-    [load]
+    [t, load]
   );
 
   React.useEffect(() => {
@@ -148,9 +173,9 @@ export default function QuestionListing() {
   return (
     <main className="container mx-auto max-w-7xl p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Questions</h1>
+        <h1 className="text-2xl font-semibold">{t('questions', { ns: 'question' })}</h1>
         <Button onClick={() => window.location.assign("/question/create")}>
-          Add Question
+          {t('addQuestion', { ns: 'question' })}
         </Button>
       </div>
       <DataTable<Question, unknown>
@@ -163,8 +188,8 @@ export default function QuestionListing() {
         onPageChange={(index) => setPageIndex(index)}
         onPageSizeChange={undefined}
       />
-      {loading ? <div className="text-sm text-muted-foreground">Loading...</div> : null}
-      {deletingId ? <div className="text-sm text-muted-foreground">Deleting...</div> : null}
+      {loading ? <div className="text-sm text-muted-foreground">{t('loading')}</div> : null}
+      {deletingId ? <div className="text-sm text-muted-foreground">{t('deleting', { ns: 'question' })}</div> : null}
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface ImagesSectionProps {
 }
 
 export default function ImagesSection({ setImageFile }: ImagesSectionProps) {
+  const { t } = useTranslation(['common', 'question']);
   const { control, watch } = useFormContext<FormValues>();
   const images = watch("images");
 
@@ -27,7 +29,7 @@ export default function ImagesSection({ setImageFile }: ImagesSectionProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label>Images</Label>
+        <Label>{t('images', { ns: 'question' })}</Label>
         <Button
           type="button"
           size="sm"
@@ -36,12 +38,12 @@ export default function ImagesSection({ setImageFile }: ImagesSectionProps) {
             imagesArray.append({ url: "", label: "", name: "" })
           }
         >
-          Add image
+          {t('addImage', { ns: 'question' })}
         </Button>
       </div>
       {images.length === 0 ? (
         <div className="text-sm text-muted-foreground">
-          No images added.
+          {t('noImagesAdded', { ns: 'question' })}
         </div>
       ) : (
         <div className="grid gap-3">
@@ -61,7 +63,7 @@ export default function ImagesSection({ setImageFile }: ImagesSectionProps) {
               </div>
               <TextField
                 name={`images.${i}.label`}
-                placeholder="Image label"
+                placeholder={t('imageLabel', { ns: 'question' })}
               />
               <div className="flex gap-2">
                 <Button
@@ -70,7 +72,7 @@ export default function ImagesSection({ setImageFile }: ImagesSectionProps) {
                   variant="destructive"
                   onClick={() => imagesArray.remove(i)}
                 >
-                  Remove
+                  {t('remove', { ns: 'question' })}
                 </Button>
               </div>
             </div>

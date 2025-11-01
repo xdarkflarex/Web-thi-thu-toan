@@ -1,0 +1,15 @@
+{
+  "guestExam": "Guest exam",
+  "guestExamTitle": "Guest exam (no login required)",
+  "loadingGuestExam": "Loading guest exam…",
+  "description": "Your selections are kept only in your browser and are not saved to the server.",
+  "yourAnswer": "Your answer",
+  "correct": "Correct",
+  "incorrect": "Incorrect",
+  "noAnswer": "No answer",
+  "submit": "Submit",
+  "reset": "Reset",
+  "score": "Score",
+  "failedToLoad": "Failed to load questions"
+}
+

@@ -8,6 +8,7 @@ import {
 } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { Columns, Split } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import { useSearchParams } from "next/navigation";
 
 
 export default function Page() {
+  const { t } = useTranslation(['common', 'question']);
   const searchParams = useSearchParams();
   const questionId = searchParams.get('id');
   const isEditMode = Boolean(questionId);
@@ -34,11 +36,11 @@ export default function Page() {
   const schema = z
     .object({
       type: z.enum(["multiple-choice", "multiple-select", "short-answer"]),
-      category: z.string().min(1, "Category is required"),
-      question: z.string().min(1, "Question is required"),
+      category: z.string().min(1, t('categoryRequired', { ns: 'question' })),
+      question: z.string().min(1, t('questionRequired', { ns: 'question' })),
       solutionGuide: z.string().optional(),
       level: z.enum(["recognize", "understand", "apply"]),
-      answers: z.array(z.string()).min(1, "At least one answer"),
+      answers: z.array(z.string()).min(1, t('atLeastOneAnswer', { ns: 'question' })),
       shortAnswer: z.string().optional(),
       images: z.array(
         z.object({
@@ -57,7 +59,7 @@ export default function Page() {
           ctx.addIssue({
             code: "custom",
             path: ["correctIndex"],
-            message: "Select the correct answer",
+            message: t('selectCorrectAnswer', { ns: 'question' }),
           });
         } else if (
           data.correctIndex < 0 ||
@@ -66,7 +68,7 @@ export default function Page() {
           ctx.addIssue({
             code: "custom",
             path: ["correctIndex"],
-            message: "Correct answer out of range",
+            message: t('correctAnswerOutOfRange', { ns: 'question' }),
           });
         }
       } else if (data.type === "multiple-select") {
@@ -75,7 +77,7 @@ export default function Page() {
           ctx.addIssue({
             code: "custom",
             path: ["correctIndices"],
-            message: "Select at least one correct answer",
+            message: t('selectAtLeastOneCorrect', { ns: 'question' }),
           });
         }
         for (const idx of indices) {
@@ -83,7 +85,7 @@ export default function Page() {
             ctx.addIssue({
               code: "custom",
               path: ["correctIndices"],
-              message: "A selected answer is out of range",
+              message: t('selectedAnswerOutOfRange', { ns: 'question' }),
             });
             break;
           }
@@ -145,7 +147,7 @@ export default function Page() {
           reset(formData);
         } catch (error) {
           console.error('Error loading question:', error);
-          alert('Error loading question for editing');
+          alert(t('errorLoading', { ns: 'question' }));
         } finally {
           setIsLoading(false);
         }
@@ -228,10 +230,10 @@ export default function Page() {
         form.reset();
       }
       
-      alert(`Question ${action} successfully!`);
+      alert(isEditMode ? t('questionUpdated', { ns: 'question' }) : t('questionCreated', { ns: 'question' }));
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} question:`, error);
-      alert(`Error ${isEditMode ? 'updating' : 'creating'} question: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(`${isEditMode ? t('errorUpdating', { ns: 'question' }) : t('errorCreating', { ns: 'question' })}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       form.setValue('isSubmitting', false);
     }
@@ -243,10 +245,10 @@ export default function Page() {
         <div className="flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight mb-4">
-              Loading Question...
+              {t('loading', { ns: 'question' })}
             </h1>
             <div className="text-muted-foreground">
-              Please wait while we load the question for editing.
+              {t('loadingDescription', { ns: 'question' })}
             </div>
           </div>
         </div>
@@ -258,7 +260,7 @@ export default function Page() {
     <div className="container mx-auto max-w-7xl py-8 space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {isEditMode ? 'Edit Question' : 'Sample Question Builder'}
+          {isEditMode ? t('edit', { ns: 'question' }) : t('sampleBuilder', { ns: 'question' })}
         </h1>
         <Button
           type="button"
@@ -267,8 +269,8 @@ export default function Page() {
           onClick={() => setIsHorizontal((prev) => !prev)}
           title={
             isHorizontal
-              ? "Switch to stacked layout"
-              : "Switch to side-by-side layout"
+              ? t('switchToStacked', { ns: 'question' })
+              : t('switchToSideBySide', { ns: 'question' })
           }
         >
           {isHorizontal ? (
@@ -292,7 +294,7 @@ export default function Page() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Editor</CardTitle>
+                  <CardTitle>{t('editor', { ns: 'question' })}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <CategoryField />
@@ -309,7 +311,7 @@ export default function Page() {
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={isSubmitting || isLoading}>
-                  {isSubmitting ? (isEditMode ? "Updating..." : "Saving...") : (isEditMode ? "Update" : "Save")}
+                  {isSubmitting ? (isEditMode ? t('updating', { ns: 'question' }) : t('saving', { ns: 'question' })) : (isEditMode ? t('update', { ns: 'question' }) : t('save', { ns: 'question' }))}
                 </Button>
                 <Button
                   type="button"
@@ -317,7 +319,7 @@ export default function Page() {
                   onClick={() => form.reset()}
                   disabled={isSubmitting || isLoading}
                 >
-                  Reset
+                  {t('reset', { ns: 'question' })}
                 </Button>
               </div>
             </div>
@@ -325,7 +327,7 @@ export default function Page() {
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Preview</CardTitle>
+                  <CardTitle>{t('preview', { ns: 'question' })}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <QuestionPreview />
@@ -333,7 +335,7 @@ export default function Page() {
               </Card>
               <div className="lg:hidden flex gap-2">
                 <Button type="submit" disabled={isSubmitting || isLoading}>
-                  {isSubmitting ? (isEditMode ? "Updating..." : "Saving...") : (isEditMode ? "Update" : "Save")}
+                  {isSubmitting ? (isEditMode ? t('updating', { ns: 'question' }) : t('saving', { ns: 'question' })) : (isEditMode ? t('update', { ns: 'question' }) : t('save', { ns: 'question' }))}
                 </Button>
                 <Button
                   type="button"
@@ -341,7 +343,7 @@ export default function Page() {
                   onClick={() => form.reset()}
                   disabled={isSubmitting || isLoading}
                 >
-                  Reset
+                  {t('reset', { ns: 'question' })}
                 </Button>
               </div>
             </div>

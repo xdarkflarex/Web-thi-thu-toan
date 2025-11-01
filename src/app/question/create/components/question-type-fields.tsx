@@ -1,29 +1,32 @@
+import { useTranslation } from "react-i18next";
 import SelectField from "@/components/form-field/select-field";
 
 export default function QuestionTypeFields() {
+  const { t } = useTranslation(['common', 'question', 'teacher']);
+  
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <SelectField
         name="type"
-        label="Question Type"
-        placeholder="Select type"
+        label={t('questionType', { ns: 'question' })}
+        placeholder={t('selectType', { ns: 'question' })}
         items={[
-          { label: "Choose 1 answer", value: "multiple-choice" },
+          { label: t('chooseOneAnswer', { ns: 'question' }), value: "multiple-choice" },
           {
-            label: "Choose many answers",
+            label: t('chooseManyAnswers', { ns: 'question' }),
             value: "multiple-select",
           },
-          { label: "Input short answer", value: "short-answer" },
+          { label: t('inputShortAnswer', { ns: 'question' }), value: "short-answer" },
         ]}
       />
       <SelectField
         name="level"
-        label="Level"
-        placeholder="Select level"
+        label={t('level', { ns: 'question' })}
+        placeholder={t('selectLevel', { ns: 'question' })}
         items={[
-          { label: "Recognize", value: "recognize" },
-          { label: "Understand", value: "understand" },
-          { label: "Apply", value: "apply" },
+          { label: t('recognize', { ns: 'teacher' }), value: "recognize" },
+          { label: t('understand', { ns: 'teacher' }), value: "understand" },
+          { label: t('apply', { ns: 'teacher' }), value: "apply" },
         ]}
       />
     </div>

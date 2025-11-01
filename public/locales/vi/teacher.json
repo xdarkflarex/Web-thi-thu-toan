@@ -1,0 +1,25 @@
+{
+  "legacyFormat": "Soạn theo định dạng legacy",
+  "type": "Loại",
+  "multipleChoice": "Trắc nghiệm 4 phương án",
+  "trueFalse": "Đúng/Sai",
+  "shortAnswer": "Trả lời ngắn",
+  "latexHint": "Gõ LaTeX giữa $...$ hoặc \\( ... \\).",
+  "difficulty": "Mức độ",
+  "recognize": "Nhận biết",
+  "understand": "Thông hiểu",
+  "apply": "Vận dụng",
+  "tagSlugs": "Tag slugs (phân cách bởi dấu phẩy)",
+  "tagSlugsPlaceholder": "vd: tinh-don-dieu-cua-ham-so, nb-dong-bien-nghich-bien",
+  "saveQuestion": "Lưu câu hỏi",
+  "creatingQuestion": "Đang tạo câu hỏi...",
+  "questionCreatedSuccess": "Tạo câu hỏi thành công",
+  "error": "Lỗi",
+  "databaseConfigRequired": "Cần cấu hình DATABASE_URL và migrate trước khi tạo câu hỏi.",
+  "preview": "Preview",
+  "question": "Câu hỏi",
+  "enterAnswer": "Nhập đáp án...",
+  "suggestedTags": "Gợi ý tag (taxonomy)",
+  "recentQuestions": "Câu hỏi mới tạo"
+}
+

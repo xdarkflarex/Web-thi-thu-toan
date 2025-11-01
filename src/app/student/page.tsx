@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type QuestionType = "MCQ4" | "TRUE_FALSE" | "SHORT_ANSWER";
 
@@ -12,6 +13,7 @@ type Question = {
 };
 
 export default function StudentExam() {
+  const { t } = useTranslation(['common', 'student']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -24,7 +26,7 @@ export default function StudentExam() {
       try {
         const res = await fetch(`/api/questions?page=1&pageSize=50&status=PUBLISHED`);
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Lỗi tải câu hỏi");
+        if (!res.ok) throw new Error(data?.error || t('errorLoadingQuestions', { ns: 'student' }));
         setQuestions(data.items as Question[]);
       } catch (e: any) {
         setError(e.message);
@@ -55,7 +57,7 @@ export default function StudentExam() {
     setResult({ correct, total });
   }
 
-  if (loading) return <div className="container"><div>Đang tải đề...</div></div>;
+  if (loading) return <div className="container"><div>{t('loadingExam', { ns: 'student' })}</div></div>;
   if (error) return <div className="container"><div className="text-red-600">{error}</div></div>;
 
   return (
@@ -63,10 +65,10 @@ export default function StudentExam() {
       <div className="quiz-header">
         <div className="quiz-header-left">
           <img className="quiz-logo" src="/logo.png" alt="logo" />
-          <div className="quiz-title">Đề thi thử (Demo)</div>
+          <div className="quiz-title">{t('examTitle', { ns: 'student' })}</div>
         </div>
         <div className="quiz-header-right">
-          <span className="timer-label">Thời gian</span>
+          <span className="timer-label">{t('time', { ns: 'student' })}</span>
           <span className="quiz-timer">--:--</span>
         </div>
       </div>
@@ -86,13 +88,13 @@ export default function StudentExam() {
               </div>
             )}
             {q.type === "SHORT_ANSWER" && (
-              <input className="border p-2 w-2/3" placeholder="Nhập đáp án..." value={answers[q.id] ?? ""} onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))} />
+              <input className="border p-2 w-2/3" placeholder={t('enterAnswer', { ns: 'student' })} value={answers[q.id] ?? ""} onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))} />
             )}
           </li>
         ))}
       </ol>
-      <button id="submit-btn" onClick={grade}>Nộp bài</button>
-      {result && <div id="result">Kết quả: {result.correct}/{result.total} câu đúng</div>}
+      <button id="submit-btn" onClick={grade}>{t('submit', { ns: 'student' })}</button>
+      {result && <div id="result">{t('result', { ns: 'student' })}: {result.correct}/{result.total} {t('correctAnswers', { ns: 'student' })}</div>}
     </div>
   );
 }
