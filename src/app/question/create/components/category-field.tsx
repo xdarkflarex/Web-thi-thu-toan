@@ -4,7 +4,16 @@ import HierarchySelectField, {
   HierarchyNode,
 } from "@/components/form-field/hierarchy-select-field";
 
-// Helper function to create translated category data
+interface CategoryFromAPI {
+  id: string;
+  slug: string;
+  name_en: string;
+  name_vi: string;
+  parent_id: string | null;
+  children?: CategoryFromAPI[];
+}
+
+// Fallback data in case API fails
 export const getCategoryData = (t: (key: string, options?: { ns: string }) => string): HierarchyNode[] => [
   {
     id: "mathematics",
@@ -107,10 +116,54 @@ export const getCategoryData = (t: (key: string, options?: { ns: string }) => st
   },
 ];
 
+// Transform API categories to HierarchyNode format
+const transformCategories = (categories: CategoryFromAPI[], language: string): HierarchyNode[] => {
+  return categories.map(cat => ({
+    id: cat.slug,
+    label: language === 'vi' ? cat.name_vi : cat.name_en,
+    children: cat.children ? transformCategories(cat.children, language) : []
+  }));
+};
+
 export default function CategoryField() {
-  const { t } = useTranslation(['common', 'question', 'category']);
-  const categoryData = React.useMemo(() => getCategoryData(t), [t]);
+  const { t, i18n } = useTranslation(['common', 'question', 'category']);
+  const [categoryData, setCategoryData] = React.useState<HierarchyNode[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const result = await res.json();
+        
+        if (result.success && result.data) {
+          const transformed = transformCategories(result.data, i18n.language);
+          setCategoryData(transformed);
+        } else {
+          // Fallback to hardcoded data
+          setCategoryData(getCategoryData(t));
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        // Fallback to hardcoded data
+        setCategoryData(getCategoryData(t));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, [i18n.language, t]);
   
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        <label className="text-sm font-medium">{t('category', { ns: 'question' })}</label>
+        <div className="text-sm text-muted-foreground">{t('loadingCategories', { ns: 'category' })}</div>
+      </div>
+    );
+  }
+
   return (
     <HierarchySelectField
       name="category"

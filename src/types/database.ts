@@ -16,6 +16,7 @@ export interface Database {
           updated_at: string
           created_by: string | null
           is_active: boolean
+          category_id: string | null
         }
         Insert: {
           id?: string
@@ -31,6 +32,7 @@ export interface Database {
           updated_at?: string
           created_by?: string | null
           is_active?: boolean
+          category_id?: string | null
         }
         Update: {
           id?: string
@@ -46,6 +48,54 @@ export interface Database {
           updated_at?: string
           created_by?: string | null
           is_active?: boolean
+          category_id?: string | null
+        }
+      }
+      categories: {
+        Row: {
+          id: string
+          parent_id: string | null
+          slug: string
+          name_en: string
+          name_vi: string
+          description: string | null
+          icon: string | null
+          color: string | null
+          sort_order: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          parent_id?: string | null
+          slug: string
+          name_en: string
+          name_vi: string
+          description?: string | null
+          icon?: string | null
+          color?: string | null
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          parent_id?: string | null
+          slug?: string
+          name_en?: string
+          name_vi?: string
+          description?: string | null
+          icon?: string | null
+          color?: string | null
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
         }
       }
       question_answers: {
@@ -97,6 +147,26 @@ export interface Database {
           image_name?: string | null
           image_label?: string | null
           image_order?: number
+          created_at?: string
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          role: 'admin' | 'teacher' | 'student'
+          full_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id: string
+          role?: 'admin' | 'teacher' | 'student'
+          full_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          role?: 'admin' | 'teacher' | 'student'
+          full_name?: string | null
           created_at?: string
         }
       }

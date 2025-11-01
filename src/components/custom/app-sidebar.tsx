@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, Home, Layers3, Settings, Users2 } from "lucide-react";
+import { Calendar, Home, Layers3, Settings, Users2, FolderTree } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   Sidebar,
@@ -75,6 +75,7 @@ export function AppSidebar() {
   const items = [
     { title: t('home', { ns: 'navigation' }), url: "/", icon: Home, show: true },
     { title: t('questions', { ns: 'navigation' }), url: "/question", icon: Layers3, show: role === 'teacher' || role === 'admin' },
+    { title: t('categories', { ns: 'navigation' }), url: "/teacher/categories", icon: FolderTree, show: role === 'teacher' || role === 'admin' },
     { title: t('students', { ns: 'navigation' }), url: "/student", icon: Users2, show: true },
     { title: t('calendar', { ns: 'navigation' }), url: "/examples/tree", icon: Calendar, show: true },
     { title: t('settings', { ns: 'navigation' }), url: "/teacher", icon: Settings, show: role === 'teacher' || role === 'admin' },
