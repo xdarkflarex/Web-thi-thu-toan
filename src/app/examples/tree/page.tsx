@@ -61,8 +61,8 @@ export default function Page() {
     )
   }
 
-  const rename = (node: TreeNode) => {
-    const newLabel = prompt("Rename item", node.label)
+  const edit = (node: TreeNode) => {
+    const newLabel = prompt("Edit item", node.label)
     if (!newLabel) return
     setNodes((prev) => findAndUpdate(prev, node.id, (n) => void (n.label = newLabel)))
   }
@@ -86,7 +86,7 @@ export default function Page() {
             data={nodes}
             defaultExpandedIds={["1", "1-1", "1-1-1"]}
             onAddChild={addChild}
-            onRename={rename}
+            onEdit={edit}
             onDelete={remove}
             onClickItem={(n) => console.log("Clicked", n)}
           />

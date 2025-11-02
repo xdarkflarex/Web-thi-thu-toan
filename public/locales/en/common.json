@@ -34,5 +34,8 @@
   "homeWelcome": "Welcome to the Question Bank System",
   "homeDescription": "Manage and organize your questions with ease",
   "browseQuestions": "Browse Questions",
-  "homeFooter": "Build questions • Organize content • Create exams"
+  "homeFooter": "Build questions • Organize content • Create exams",
+  "addChild": "Add child",
+  "expand": "Expand",
+  "collapse": "Collapse"
 }

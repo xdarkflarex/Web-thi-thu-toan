@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ChevronRight, Folder, File, MoreVertical, Plus, Pencil, Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,7 +27,7 @@ export type TreeNode = {
 
 type CommonActionHandlers = {
   onAddChild?: (node: TreeNode) => void
-  onRename?: (node: TreeNode) => void
+  onEdit?: (node: TreeNode) => void
   onDelete?: (node: TreeNode) => void
   onClickItem?: (node: TreeNode) => void
 }
@@ -86,6 +87,7 @@ type RowProps = {
 } & CommonActionHandlers
 
 function TreeRow({ node, depth, expanded, onToggle, getActions, ...handlers }: RowProps) {
+  const { t } = useTranslation('common')
   const hasChildren = Array.isArray(node.children) && node.children.length > 0
   const isOpen = expanded.has(node.id)
 
@@ -105,7 +107,7 @@ function TreeRow({ node, depth, expanded, onToggle, getActions, ...handlers }: R
       >
         <button
           type="button"
-          aria-label={isOpen ? "Collapse" : "Expand"}
+          aria-label={isOpen ? t('collapse') : t('expand')}
           className={cn(
             "flex size-6 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent",
             !hasChildren && "invisible"
@@ -156,26 +158,33 @@ function TreeRow({ node, depth, expanded, onToggle, getActions, ...handlers }: R
   )
 }
 
-function ActionsPopover({ node, onAddChild, onRename, onDelete }: { node: TreeNode } & CommonActionHandlers) {
+function ActionsPopover({ node, onAddChild, onEdit, onDelete }: { node: TreeNode } & CommonActionHandlers) {
+  const { t } = useTranslation('common')
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label="Actions">
+        <Button variant="ghost" size="icon-sm" aria-label={t('actions')}>
           <MoreVertical className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={6}>
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => onAddChild?.(node)}>
-          <Plus className="size-4" /> Add child
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onRename?.(node)}>
-          <Pencil className="size-4" /> Rename
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={() => onDelete?.(node)}>
-          <Trash2 className="size-4" /> Delete
-        </DropdownMenuItem>
+        <DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
+        {onAddChild && (
+          <DropdownMenuItem onClick={() => onAddChild(node)}>
+            <Plus className="size-4" /> {t('addChild')}
+          </DropdownMenuItem>
+        )}
+        {onEdit && (
+          <DropdownMenuItem onClick={() => onEdit(node)}>
+            <Pencil className="size-4" /> {t('edit')}
+          </DropdownMenuItem>
+        )}
+        {onAddChild || onEdit ? <DropdownMenuSeparator /> : null}
+        {onDelete && (
+          <DropdownMenuItem variant="destructive" onClick={() => onDelete(node)}>
+            <Trash2 className="size-4" /> {t('delete')}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )
