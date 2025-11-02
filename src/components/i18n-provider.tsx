@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import '@/lib/i18n';
+import { initializeLanguage } from '@/lib/i18n';
 
 interface I18nProviderProps {
   children: React.ReactNode;
@@ -9,8 +10,8 @@ interface I18nProviderProps {
 
 export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
-    // Initialize i18n on client side
-    import('@/lib/i18n');
+    // Initialize i18n on client side and load user language preference
+    initializeLanguage();
   }, []);
 
   return <>{children}</>;

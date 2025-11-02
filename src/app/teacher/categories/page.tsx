@@ -21,8 +21,7 @@ import Tree, { TreeNode } from "@/components/custom/tree"
 interface Category {
   id: string
   slug: string
-  name_en: string
-  name_vi: string
+  name: string
   parent_id: string | null
   description?: string | null
   icon?: string | null
@@ -33,8 +32,7 @@ interface Category {
 
 const getCategorySchema = (t: (key: string, options?: { ns: string }) => string) => z.object({
   slug: z.string().min(1, t('slugRequired', { ns: 'category' })),
-  name_en: z.string().min(1, t('englishNameRequired', { ns: 'category' })),
-  name_vi: z.string().min(1, t('vietnameseNameRequired', { ns: 'category' })),
+  name: z.string().min(1, t('nameRequired', { ns: 'category' })),
   parent_id: z.string().optional(),
   description: z.string().optional(),
   sort_order: z.preprocess((val) => val === "" || val === undefined ? 0 : Number(val), z.number().min(0))
@@ -56,8 +54,7 @@ export default function CategoryManagementPage() {
     resolver: zodResolver(categorySchema),
     defaultValues: {
       slug: '',
-      name_en: '',
-      name_vi: '',
+      name: '',
       parent_id: '',
       description: '',
       sort_order: 0
@@ -92,7 +89,7 @@ export default function CategoryManagementPage() {
   // Convert Category to TreeNode format - MUST be called before any early returns
   const treeNodes: TreeNode[] = React.useMemo(() => {
     const convertCategoryToTreeNode = (category: Category): TreeNode => {
-      const displayName = i18n.language === 'vi' ? category.name_vi : category.name_en
+      const displayName = category.name
       const label = `${displayName} (${category.slug})`
       
       return {
@@ -109,7 +106,7 @@ export default function CategoryManagementPage() {
     }
     
     return categories.map(convertCategoryToTreeNode)
-  }, [categories, i18n.language])
+  }, [categories])
 
   if (isCheckingAuth) {
     return (
@@ -168,8 +165,7 @@ export default function CategoryManagementPage() {
   const resetForm = () => {
     form.reset({
       slug: '',
-      name_en: '',
-      name_vi: '',
+      name: '',
       parent_id: '__none__',
       description: '',
       sort_order: 0
@@ -181,8 +177,7 @@ export default function CategoryManagementPage() {
     setEditingCategory(cat)
     form.reset({
       slug: cat.slug,
-      name_en: cat.name_en,
-      name_vi: cat.name_vi,
+      name: cat.name,
       parent_id: cat.parent_id || '__none__',
       description: cat.description || '',
       sort_order: cat.sort_order
@@ -330,18 +325,11 @@ export default function CategoryManagementPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <TextField
-                  name="name_en"
-                  label={`${t('englishName', { ns: 'category' })} *`}
-                  placeholder={t('englishNamePlaceholder', { ns: 'category' })}
-                />
-                <TextField
-                  name="name_vi"
-                  label={`${t('vietnameseName', { ns: 'category' })} *`}
-                  placeholder={t('vietnameseNamePlaceholder', { ns: 'category' })}
-                />
-              </div>
+              <TextField
+                name="name"
+                label={`${t('name', { ns: 'category' })} *`}
+                placeholder={t('namePlaceholder', { ns: 'category' })}
+              />
 
               <SelectField
                 name="parent_id"
@@ -358,7 +346,7 @@ export default function CategoryManagementPage() {
                     }
                     const path = getFullPath(cat).join(' > ')
                     return {
-                      label: `${i18n.language === 'vi' ? cat.name_vi : cat.name_en} (${path})`,
+                      label: `${cat.name} (${path})`,
                       value: cat.id
                     }
                   })

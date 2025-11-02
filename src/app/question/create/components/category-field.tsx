@@ -7,8 +7,7 @@ import HierarchySelectField, {
 interface CategoryFromAPI {
   id: string;
   slug: string;
-  name_en: string;
-  name_vi: string;
+  name: string;
   parent_id: string | null;
   children?: CategoryFromAPI[];
 }
@@ -117,11 +116,11 @@ export const getCategoryData = (t: (key: string, options?: { ns: string }) => st
 ];
 
 // Transform API categories to HierarchyNode format
-const transformCategories = (categories: CategoryFromAPI[], language: string): HierarchyNode[] => {
+const transformCategories = (categories: CategoryFromAPI[]): HierarchyNode[] => {
   return categories.map(cat => ({
     id: cat.slug,
-    label: language === 'vi' ? cat.name_vi : cat.name_en,
-    children: cat.children ? transformCategories(cat.children, language) : []
+    label: cat.name,
+    children: cat.children ? transformCategories(cat.children) : []
   }));
 };
 
@@ -137,7 +136,7 @@ export default function CategoryField() {
         const result = await res.json();
         
         if (result.success && result.data) {
-          const transformed = transformCategories(result.data, i18n.language);
+          const transformed = transformCategories(result.data);
           setCategoryData(transformed);
         } else {
           // Fallback to hardcoded data
@@ -153,7 +152,7 @@ export default function CategoryField() {
     };
 
     fetchCategories();
-  }, [i18n.language, t]);
+  }, [t]);
   
   if (loading) {
     return (
