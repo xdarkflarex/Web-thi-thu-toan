@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "next/navigation";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ type Question = Database["public"]["Tables"]["questions"]["Row"];
 export default function QuestionListing() {
   const { t } = useTranslation(['common', 'question', 'teacher', 'category']);
   const { isCheckingAuth } = useAuth();
+  const router = useRouter();
   const [data, setData] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -141,7 +143,7 @@ export default function QuestionListing() {
                   {t('copyId', { ns: 'question' })}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.assign(`/question/create?id=${q.id}`)}>
+                <DropdownMenuItem onClick={() => router.push(`/question/create?id=${q.id}`)}>
                   {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -157,7 +159,7 @@ export default function QuestionListing() {
                     }
                   }}
                 >
-                  {t('common.delete')}
+                  {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -188,7 +190,7 @@ export default function QuestionListing() {
     <main className="container mx-auto max-w-7xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t('questions', { ns: 'question' })}</h1>
-        <Button onClick={() => window.location.assign("/question/create")}>
+        <Button onClick={() => router.push("/question/create")}>
           {t('addQuestion', { ns: 'question' })}
         </Button>
       </div>
