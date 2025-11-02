@@ -167,7 +167,7 @@ export default function QuestionListing() {
         },
       },
     ],
-    [t, load]
+    [t, load, router]
   );
 
   React.useEffect(() => {
@@ -203,6 +203,26 @@ export default function QuestionListing() {
         pageSize={pageSize}
         onPageChange={(index) => setPageIndex(index)}
         onPageSizeChange={undefined}
+        translations={{
+          filterPlaceholder: t('filterPlaceholder', { ns: 'common' }),
+          columns: t('columns', { ns: 'common' }),
+          toggleColumns: t('toggleColumns', { ns: 'common' }),
+          noResults: t('noResults', { ns: 'common' }),
+          rows: t('rows', { ns: 'common' }),
+          previous: t('previous', { ns: 'common' }),
+          next: t('next', { ns: 'common' }),
+          getColumnLabel: (columnId: string) => {
+            // Map column IDs to their translated labels
+            const columnLabelMap: Record<string, string> = {
+              'category': t('category', { ns: 'question' }),
+              'type': t('questionType', { ns: 'question' }),
+              'level': t('level', { ns: 'question' }),
+              'question': t('question', { ns: 'question' }),
+              'actions': t('actions', { ns: 'question' }),
+            };
+            return columnLabelMap[columnId] || columnId;
+          },
+        }}
       />
       {loading ? <div className="text-sm text-muted-foreground">{t('loading')}</div> : null}
       {deletingId ? <div className="text-sm text-muted-foreground">{t('deleting', { ns: 'question' })}</div> : null}

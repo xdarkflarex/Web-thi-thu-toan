@@ -43,6 +43,16 @@ export interface DataTableProps<TData, TValue> {
   onPageSizeChange?: (pageSize: number) => void;
   pageIndex?: number;
   pageSize?: number;
+  translations?: {
+    filterPlaceholder?: string;
+    columns?: string;
+    toggleColumns?: string;
+    noResults?: string;
+    rows?: string;
+    previous?: string;
+    next?: string;
+    getColumnLabel?: (columnId: string) => string;
+  };
 }
 
 export function DataTable<TData, TValue>({
@@ -54,7 +64,18 @@ export function DataTable<TData, TValue>({
   onPageSizeChange,
   pageIndex,
   pageSize,
+  translations = {},
 }: DataTableProps<TData, TValue>) {
+  const {
+    filterPlaceholder = "Filter...",
+    columns: columnsLabel = "Columns",
+    toggleColumns = "Toggle columns",
+    noResults = "No results.",
+    rows = "row(s)",
+    previous = "Previous",
+    next = "Next",
+    getColumnLabel = (id: string) => id,
+  } = translations;
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -96,7 +117,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4 gap-2">
         {searchableColumnId ? (
           <Input
-            placeholder="Filter..."
+            placeholder={filterPlaceholder}
             value={(table.getColumn(searchableColumnId)?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn(searchableColumnId)?.setFilterValue(event.target.value)
@@ -108,11 +129,11 @@ export function DataTable<TData, TValue>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
+              {columnsLabel} <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+            <DropdownMenuLabel>{toggleColumns}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {table
               .getAllColumns()
@@ -125,7 +146,7 @@ export function DataTable<TData, TValue>({
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   >
-                    {column.id}
+                    {getColumnLabel(column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
@@ -165,7 +186,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  {noResults}
                 </TableCell>
               </TableRow>
             )}
@@ -175,7 +196,7 @@ export function DataTable<TData, TValue>({
 
       <div className="flex items-center justify-between px-2 py-2">
         <div className="text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} row(s)
+          {table.getFilteredRowModel().rows.length} {rows}
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -184,7 +205,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {previous}
           </Button>
           <Button
             variant="outline"
@@ -192,7 +213,7 @@ export function DataTable<TData, TValue>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {next}
           </Button>
         </div>
       </div>

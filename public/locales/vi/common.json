@@ -37,5 +37,10 @@
   "homeFooter": "Tạo câu hỏi • Tổ chức nội dung • Tạo đề thi",
   "addChild": "Thêm con",
   "expand": "Mở rộng",
-  "collapse": "Thu gọn"
+  "collapse": "Thu gọn",
+  "filterPlaceholder": "Tìm kiếm...",
+  "columns": "Cột",
+  "toggleColumns": "Bật/tắt cột",
+  "noResults": "Không có kết quả.",
+  "rows": "dòng"
 }
