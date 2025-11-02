@@ -29,5 +29,10 @@
   "none": "Không có",
   "required": "Bắt buộc",
   "optional": "Tùy chọn",
-  "menu": "Menu"
+  "menu": "Menu",
+  "homeTitle": "Ngân hàng câu hỏi THPT",
+  "homeWelcome": "Chào mừng đến với Hệ thống Ngân hàng câu hỏi",
+  "homeDescription": "Quản lý và tổ chức câu hỏi của bạn một cách dễ dàng",
+  "browseQuestions": "Duyệt câu hỏi",
+  "homeFooter": "Tạo câu hỏi • Tổ chức nội dung • Tạo đề thi"
 }
