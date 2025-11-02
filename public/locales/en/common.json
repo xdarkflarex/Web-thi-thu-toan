@@ -29,5 +29,18 @@
   "none": "None",
   "required": "Required",
   "optional": "Optional",
-  "menu": "Menu"
+  "menu": "Menu",
+  "homeTitle": "THPT Question Bank",
+  "homeWelcome": "Welcome to the Question Bank System",
+  "homeDescription": "Manage and organize your questions with ease",
+  "browseQuestions": "Browse Questions",
+  "homeFooter": "Build questions • Organize content • Create exams",
+  "addChild": "Add child",
+  "expand": "Expand",
+  "collapse": "Collapse",
+  "filterPlaceholder": "Filter...",
+  "columns": "Columns",
+  "toggleColumns": "Toggle columns",
+  "noResults": "No results.",
+  "rows": "row(s)"
 }

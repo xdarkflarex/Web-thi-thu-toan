@@ -13,9 +13,10 @@ import { SelectField } from "@/components/form-field/select-field"
 import { NumberField } from "@/components/form-field/number-field"
 import { TextareaField } from "@/components/form-field/textarea-field"
 import { toast } from "sonner"
-import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/hooks/use-auth"
+import Tree, { TreeNode } from "@/components/custom/tree"
 
 interface Category {
   id: string
@@ -87,6 +88,28 @@ export default function CategoryManagementPage() {
       fetchCategories()
     }
   }, [isCheckingAuth, fetchCategories])
+
+  // Convert Category to TreeNode format - MUST be called before any early returns
+  const treeNodes: TreeNode[] = React.useMemo(() => {
+    const convertCategoryToTreeNode = (category: Category): TreeNode => {
+      const displayName = i18n.language === 'vi' ? category.name_vi : category.name_en
+      const label = `${displayName} (${category.slug})`
+      
+      return {
+        id: category.id,
+        label: label,
+        children: category.children?.map(convertCategoryToTreeNode),
+        data: {
+          category: category,
+          displayName: displayName,
+          slug: category.slug,
+          description: category.description
+        }
+      }
+    }
+    
+    return categories.map(convertCategoryToTreeNode)
+  }, [categories, i18n.language])
 
   if (isCheckingAuth) {
     return (
@@ -206,51 +229,28 @@ export default function CategoryManagementPage() {
     return result
   }
 
-  const renderCategoryTree = (cats: Category[], level = 0) => (
-    <div className="space-y-1 pb-1 pr-1">
-      {cats.map(cat => (
-        <div key={cat.id} className="border rounded-md">
-          <div 
-            className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
-            style={{ paddingLeft: `${16 + level * 24}px` }}
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">
-                  {i18n.language === 'vi' ? cat.name_vi : cat.name_en}
-                </span>
-                <span className="text-xs text-muted-foreground">({cat.slug})</span>
-              </div>
-              {cat.description && (
-                <p className="text-xs text-muted-foreground mt-1">{cat.description}</p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleEdit(cat)}
-              >
-                <PencilIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => handleDelete(cat.id)}
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          {cat.children && cat.children.length > 0 && (
-            <div className="pl-4">
-              {renderCategoryTree(cat.children, level + 1)}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  )
+  const handleAddChild = (node: TreeNode) => {
+    const category = node.data?.category as Category | undefined
+    resetForm()
+    if (category) {
+      form.setValue('parent_id', category.id)
+    }
+    setIsDialogOpen(true)
+  }
+
+  const handleEditFromTree = (node: TreeNode) => {
+    const category = node.data?.category as Category | undefined
+    if (category) {
+      handleEdit(category)
+    }
+  }
+
+  const handleDeleteFromTree = (node: TreeNode) => {
+    const category = node.data?.category as Category | undefined
+    if (category) {
+      handleDelete(category.id)
+    }
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -286,7 +286,20 @@ export default function CategoryManagementPage() {
         </div>
       ) : (
         <div className="border rounded-lg p-4 bg-card">
-          {renderCategoryTree(categories)}
+          <Tree
+            data={treeNodes}
+            defaultExpandedIds={[]}
+            onAddChild={handleAddChild}
+            onEdit={handleEditFromTree}
+            onDelete={handleDeleteFromTree}
+            onClickItem={(node) => {
+              const category = node.data?.category as Category | undefined
+              if (category) {
+                handleEdit(category)
+              }
+            }}
+            className="w-full"
+          />
         </div>
       )}
 

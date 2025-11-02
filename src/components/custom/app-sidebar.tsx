@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Calendar, Home, Layers3, Settings, Users2, FolderTree } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -21,6 +23,8 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function AppSidebar() {
   const { t } = useTranslation(['common', 'navigation']);
+  const pathname = usePathname();
+  const router = useRouter();
   const [isAuthed, setIsAuthed] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   type Role = 'admin' | 'teacher' | 'student'
@@ -196,6 +200,26 @@ export function AppSidebar() {
     { title: t('calendar', { ns: 'navigation' }), url: "/examples/tree", icon: Calendar, show: true },
     { title: t('settings', { ns: 'navigation' }), url: "/teacher", icon: Settings, show: role === 'teacher' || role === 'admin' },
   ];
+
+  // Helper function to check if a route is active
+  const isActive = (url: string) => {
+    if (url === "/") {
+      // Home page only matches exactly
+      return pathname === "/";
+    }
+    // Exact match
+    if (pathname === url) {
+      return true;
+    }
+    // For routes that shouldn't match nested paths (like /teacher vs /teacher/categories)
+    const exactMatchOnlyRoutes = ["/teacher", "/student"];
+    if (exactMatchOnlyRoutes.includes(url)) {
+      return false;
+    }
+    // For other routes, check if pathname starts with the URL
+    return pathname.startsWith(url + "/");
+  };
+
   return (
     <Sidebar>
       <SidebarHeader />
@@ -206,11 +230,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.filter((i) => i.show).map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -231,7 +255,7 @@ export function AppSidebar() {
               className="h-7"
               onClick={async () => {
                 await supabase.auth.signOut();
-                window.location.assign("/auth/sign-in");
+                router.push("/auth/sign-in");
               }}
             >
               {t('logout', { ns: 'navigation' })}

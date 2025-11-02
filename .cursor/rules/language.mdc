@@ -1,0 +1,7 @@
+---
+description: Language
+globs:
+alwaysApply: true
+---
+
+- Always apply i18n for Front-end, en and vi (currently vi is default).

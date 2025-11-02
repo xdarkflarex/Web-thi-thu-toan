@@ -29,5 +29,18 @@
   "none": "Không có",
   "required": "Bắt buộc",
   "optional": "Tùy chọn",
-  "menu": "Menu"
+  "menu": "Menu",
+  "homeTitle": "Ngân hàng câu hỏi THPT",
+  "homeWelcome": "Chào mừng đến với Hệ thống Ngân hàng câu hỏi",
+  "homeDescription": "Quản lý và tổ chức câu hỏi của bạn một cách dễ dàng",
+  "browseQuestions": "Duyệt câu hỏi",
+  "homeFooter": "Tạo câu hỏi • Tổ chức nội dung • Tạo đề thi",
+  "addChild": "Thêm con",
+  "expand": "Mở rộng",
+  "collapse": "Thu gọn",
+  "filterPlaceholder": "Tìm kiếm...",
+  "columns": "Cột",
+  "toggleColumns": "Bật/tắt cột",
+  "noResults": "Không có kết quả.",
+  "rows": "dòng"
 }

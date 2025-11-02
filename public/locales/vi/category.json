@@ -46,7 +46,7 @@
   "createFirstCategory": "Tạo Danh mục Đầu tiên",
   "editCategory": "Chỉnh sửa Danh mục",
   "createNewCategory": "Tạo Danh mục Mới",
-  "slug": "Slug",
+  "slug": "Định danh",
   "slugPlaceholder": "dai-so-tuyen-tinh",
   "slugHelp": "Định danh duy nhất (không thể thay đổi sau khi tạo)",
   "sortOrder": "Thứ tự Sắp xếp",

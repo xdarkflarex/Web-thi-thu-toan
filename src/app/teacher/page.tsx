@@ -1,192 +1,26 @@
-"use client";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks/use-auth";
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
-type QuestionType = "MCQ4" | "TRUE_FALSE" | "SHORT_ANSWER";
-type Difficulty = "NHAN_BIET" | "THONG_HIEU" | "VAN_DUNG";
-
-const typeSamples: Record<string, string> = {
-  multiple: `Câu ví dụ. Hàm số nào sau đây là bậc nhất?\na) y = 2x + 1\nb) y = x^2 + 1\nc) y = 3/x\nd) y = \\sqrt{x}\n*Đáp án: a`,
-  truefalse: `Câu ví dụ. Hàm số y = x^2 là hàm số bậc nhất.\n*Đáp án: sai`,
-  short: `Câu ví dụ. Kết quả của 2 + 2 là?\n*Đáp án: 4`,
-};
-
-function parseLegacy(text: string, legacyType: "multiple" | "truefalse" | "short") {
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-  let question = ""; let options: string[] = []; let answerIndex = 0; let shortAnswer = "";
-  if (legacyType === "multiple") {
-    for (let i = 0; i < lines.length; i++) {
-      if (i === 0) question = lines[0];
-      else if (/^[a-d]\)/i.test(lines[i])) options.push(lines[i].replace(/^[a-d]\)\s*/i, ""));
-      else if (lines[i].toLowerCase().startsWith("*đáp án:")) {
-        const ans = lines[i].split(":")[1].trim().toLowerCase();
-        answerIndex = ["a","b","c","d"].indexOf(ans);
-      }
-    }
-    return { stem: question, type: "MCQ4" as QuestionType, options: options.map((content, i) => ({ label: String.fromCharCode(65+i), content, isCorrect: i === answerIndex, order: i+1 })) };
-  } else if (legacyType === "truefalse") {
-    question = lines[0] || "";
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i].toLowerCase().startsWith("*đáp án:")) {
-        const ans = lines[i].split(":")[1].trim().toLowerCase();
-        answerIndex = (ans === "đúng" || ans === "dung") ? 0 : 1;
-      }
-    }
-    const opts = ["Đúng","Sai"].map((content, i) => ({ label: i===0?"A":"B", content, isCorrect: i===answerIndex, order: i+1 }));
-    return { stem: question, type: "TRUE_FALSE" as QuestionType, options: opts };
-  } else {
-    question = lines[0] || "";
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i].toLowerCase().startsWith("*đáp án:")) shortAnswer = lines[i].split(":")[1].trim();
-    }
-    return { stem: question, type: "SHORT_ANSWER" as QuestionType, answers: shortAnswer ? [{ text: shortAnswer }] : [] };
-  }
-}
-
-export default function TeacherIntegrated() {
-  const { t } = useTranslation(['common', 'teacher']);
-  const { isCheckingAuth } = useAuth();
-  const [legacyType, setLegacyType] = useState<"multiple"|"truefalse"|"short">("multiple");
-  const [legacyText, setLegacyText] = useState(typeSamples["multiple"]);
-  const [difficulty, setDifficulty] = useState<Difficulty>("NHAN_BIET");
-  const [tagSlugs, setTagSlugs] = useState("");
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [suggest, setSuggest] = useState<{ name: string; slug: string }[]>([]);
-  const [recent, setRecent] = useState<any[]>([]);
-
-  const parsed = useMemo(() => parseLegacy(legacyText, legacyType), [legacyText, legacyType]);
-
-  useEffect(() => {
-    // MathJax typeset preview if available
-    // @ts-ignore
-    if (window && (window as any).MathJax && (window as any).MathJax.typesetPromise) {
-      // @ts-ignore
-      (window as any).MathJax.typesetPromise();
-    }
-  }, [parsed, legacyText]);
-
-  useEffect(() => {
-    // Suggest top-level taxonomy children of domain 'mot-so-yeu-to-giai-tich' if available
-    fetch(`/api/taxonomy?parent=mot-so-yeu-to-giai-tich`).then(r => r.json()).then(setSuggest).catch(() => {});
-    // Load recent questions
-    fetch(`/api/questions?page=1&pageSize=10`).then(r => r.json()).then(d => setRecent(d.items || [])).catch(() => {});
-  }, []);
-
-  if (isCheckingAuth) {
-    return (
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">{t('loading', { ns: 'common' })}</p>
-        </div>
-      </div>
-    )
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatusMsg(t('creatingQuestion', { ns: 'teacher' }));
-    try {
-      const body: any = {
-        stem: parsed.stem,
-        type: parsed.type,
-        difficulty,
-        status: "PUBLISHED",
-        tagSlugs: tagSlugs.split(",").map(s => s.trim()).filter(Boolean),
-      };
-      if (parsed.options) body.options = parsed.options;
-      if (parsed.answers) body.answers = parsed.answers;
-      const res = await fetch("/api/questions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || t('error', { ns: 'teacher' }));
-      setStatusMsg(t('questionCreatedSuccess', { ns: 'teacher' }) + ": " + data.id);
-    } catch (err: any) {
-      setStatusMsg(t('error', { ns: 'teacher' }) + ": " + err.message);
-    }
-  }
-
+export default function TeacherPage() {
   return (
-    <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white rounded border p-4">
-        <h2 className="font-semibold mb-3">{t('legacyFormat', { ns: 'teacher' })}</h2>
-        <label className="block text-sm mb-1">{t('type', { ns: 'teacher' })}</label>
-        <select className="border p-2 mb-2" value={legacyType} onChange={e => { const v = e.target.value as any; setLegacyType(v); setLegacyText(typeSamples[v]); }}>
-          <option value="multiple">{t('multipleChoice', { ns: 'teacher' })}</option>
-          <option value="truefalse">{t('trueFalse', { ns: 'teacher' })}</option>
-          <option value="short">{t('shortAnswer', { ns: 'teacher' })}</option>
-        </select>
-        <textarea className="w-full border p-2" rows={12} value={legacyText} onChange={e => setLegacyText(e.target.value)} />
-        <p className="text-xs text-gray-600 mt-2">{t('latexHint', { ns: 'teacher' })}</p>
-        <div className="mt-3">
-          <label className="block text-sm mb-1">{t('difficulty', { ns: 'teacher' })}</label>
-          <select className="border p-2" value={difficulty} onChange={e => setDifficulty(e.target.value as Difficulty)}>
-            <option value="NHAN_BIET">{t('recognize', { ns: 'teacher' })}</option>
-            <option value="THONG_HIEU">{t('understand', { ns: 'teacher' })}</option>
-            <option value="VAN_DUNG">{t('apply', { ns: 'teacher' })}</option>
-          </select>
-        </div>
-        <div className="mt-3">
-          <label className="block text-sm mb-1">{t('tagSlugs', { ns: 'teacher' })}</label>
-          <input className="w-full border p-2" placeholder={t('tagSlugsPlaceholder', { ns: 'teacher' })} value={tagSlugs} onChange={e => setTagSlugs(e.target.value)} />
-        </div>
-        <button onClick={submit as any} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">{t('saveQuestion', { ns: 'teacher' })}</button>
-        {statusMsg && <p className="text-sm mt-2">{statusMsg}</p>}
-        <p className="text-sm text-gray-600">{t('databaseConfigRequired', { ns: 'teacher' })}</p>
-      </div>
-
-      <div className="bg-white rounded border p-4">
-        <h2 className="font-semibold mb-3">{t('preview', { ns: 'teacher' })}</h2>
-        <div className="mb-3">
-          <div className="font-semibold mb-2">{t('question', { ns: 'teacher' })}</div>
-          <div className="math-latex">{parsed.stem}</div>
-        </div>
-        {parsed.type === "MCQ4" && (
-          <div className="space-y-2">
-            {parsed.options?.map((opt: any, i: number) => (
-              <label key={i} className="flex items-center gap-2">
-                <input type="radio" name="prev" disabled checked={opt.isCorrect} />
-                <span className="font-semibold text-blue-600">{opt.label})</span>
-                <span className="math-latex">{opt.content}</span>
-              </label>
-            ))}
-          </div>
-        )}
-        {parsed.type === "TRUE_FALSE" && (
-          <div className="space-y-2">
-            {parsed.options?.map((opt: any, i: number) => (
-              <label key={i} className="flex items-center gap-2">
-                <input type="radio" name="prev" disabled checked={opt.isCorrect} />
-                <span className="font-semibold text-blue-600">{opt.content}</span>
-              </label>
-            ))}
-          </div>
-        )}
-        {parsed.type === "SHORT_ANSWER" && (
-          <div>
-            <input type="text" className="border p-2 w-3/4" placeholder={t('enterAnswer', { ns: 'teacher' })} />
-          </div>
-        )}
-      </div>
-
-      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded border p-4">
-          <h3 className="font-semibold mb-2">{t('suggestedTags', { ns: 'teacher' })}</h3>
-          <div className="flex flex-wrap gap-2">
-            {suggest.map(s => (
-              <button key={s.slug} type="button" className="px-3 py-1 border rounded" onClick={() => setTagSlugs(v => v ? `${v}, ${s.slug}` : s.slug)}>{s.name}</button>
-            ))}
-          </div>
-        </div>
-        <div className="bg-white rounded border p-4">
-          <h3 className="font-semibold mb-2">{t('recentQuestions', { ns: 'teacher' })}</h3>
-          <ul className="list-disc pl-5">
-            {recent.map((q: any) => (
-              <li key={q.id}><span className="text-xs text-gray-600">[{q.type} - {q.difficulty}]</span> {q.stem}</li>
-            ))}
-          </ul>
+    <main className="flex min-h-screen flex-col items-center justify-center p-12 gap-6">
+      <div className="text-center space-y-6 max-w-md">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+          Coming Soon
+        </h1>
+        <p className="text-xl text-gray-600 dark:text-gray-300">
+          This page is under construction
+        </p>
+        <p className="text-gray-500 dark:text-gray-400">
+          We're working on something amazing. Please check back later!
+        </p>
+        <div className="pt-4">
+          <Button asChild>
+            <Link href="/">Go to Home</Link>
+          </Button>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
