@@ -69,6 +69,9 @@
   "failedToDeleteCategory": "Xóa danh mục thất bại",
   "slugRequired": "Slug là bắt buộc",
   "englishNameRequired": "Tên tiếng Anh là bắt buộc",
-  "vietnameseNameRequired": "Tên tiếng Việt là bắt buộc"
+  "vietnameseNameRequired": "Tên tiếng Việt là bắt buộc",
+  "name": "Tên",
+  "namePlaceholder": "Đại số tuyến tính",
+  "nameRequired": "Tên là bắt buộc"
 }
 

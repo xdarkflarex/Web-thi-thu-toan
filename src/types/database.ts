@@ -56,8 +56,7 @@ export interface Database {
           id: string
           parent_id: string | null
           slug: string
-          name_en: string
-          name_vi: string
+          name: string
           description: string | null
           icon: string | null
           color: string | null
@@ -71,8 +70,7 @@ export interface Database {
           id?: string
           parent_id?: string | null
           slug: string
-          name_en: string
-          name_vi: string
+          name: string
           description?: string | null
           icon?: string | null
           color?: string | null
@@ -86,8 +84,7 @@ export interface Database {
           id?: string
           parent_id?: string | null
           slug?: string
-          name_en?: string
-          name_vi?: string
+          name?: string
           description?: string | null
           icon?: string | null
           color?: string | null
@@ -155,18 +152,21 @@ export interface Database {
           id: string
           role: 'admin' | 'teacher' | 'student'
           full_name: string | null
+          language: 'vi' | 'en'
           created_at: string
         }
         Insert: {
           id: string
           role?: 'admin' | 'teacher' | 'student'
           full_name?: string | null
+          language?: 'vi' | 'en'
           created_at?: string
         }
         Update: {
           id?: string
           role?: 'admin' | 'teacher' | 'student'
           full_name?: string | null
+          language?: 'vi' | 'en'
           created_at?: string
         }
       }

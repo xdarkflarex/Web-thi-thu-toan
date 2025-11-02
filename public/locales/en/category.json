@@ -69,6 +69,9 @@
   "failedToDeleteCategory": "Failed to delete category",
   "slugRequired": "Slug is required",
   "englishNameRequired": "English name is required",
-  "vietnameseNameRequired": "Vietnamese name is required"
+  "vietnameseNameRequired": "Vietnamese name is required",
+  "name": "Name",
+  "namePlaceholder": "Linear Algebra",
+  "nameRequired": "Name is required"
 }
 

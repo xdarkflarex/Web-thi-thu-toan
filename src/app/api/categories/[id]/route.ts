@@ -51,8 +51,7 @@ export async function PATCH(
     
     const updateData: any = {}
     if (body.slug !== undefined) updateData.slug = body.slug
-    if (body.name_en !== undefined) updateData.name_en = body.name_en
-    if (body.name_vi !== undefined) updateData.name_vi = body.name_vi
+    if (body.name !== undefined) updateData.name = body.name
     if (body.parent_id !== undefined) updateData.parent_id = body.parent_id || null
     if (body.description !== undefined) updateData.description = body.description
     if (body.icon !== undefined) updateData.icon = body.icon

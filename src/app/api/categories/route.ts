@@ -7,8 +7,7 @@ interface Category {
   id: string
   parent_id: string | null
   slug: string
-  name_en: string
-  name_vi: string
+  name: string
   description: string | null
   icon: string | null
   color: string | null
@@ -104,8 +103,7 @@ export async function POST(request: NextRequest) {
       .from('categories')
       .insert({
         slug: body.slug,
-        name_en: body.name_en,
-        name_vi: body.name_vi,
+        name: body.name,
         parent_id: body.parent_id || null,
         description: body.description || null,
         icon: body.icon || null,

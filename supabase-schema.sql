@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   role public.user_role NOT NULL DEFAULT 'student',
   full_name text,
+  language VARCHAR(5) DEFAULT 'vi' CHECK (language IN ('vi', 'en')),
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -222,8 +223,8 @@ CREATE TRIGGER trg_prevent_role_escalation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NULL))
+  INSERT INTO public.profiles (id, full_name, language)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NULL), 'vi')
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
