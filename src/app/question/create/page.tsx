@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "next/navigation";
 import { Columns, Split } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ import {
 } from "./components";
 import { supabase } from "@/lib/supabase";
 import { QuestionService } from "@/lib/question-service";
-import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
  
 
 
@@ -32,6 +33,7 @@ export default function Page() {
   const searchParams = useSearchParams();
   const questionId = searchParams.get('id');
   const isEditMode = Boolean(questionId);
+  const { isCheckingAuth } = useAuth();
 
   const schema = z
     .object({
@@ -155,7 +157,7 @@ export default function Page() {
       
       loadQuestion();
     }
-  }, [isEditMode, questionId, reset]);
+  }, [isEditMode, questionId, reset, t]);
 
   React.useEffect(() => {
     return () => {
@@ -239,7 +241,7 @@ export default function Page() {
     }
   };
 
-  if (isLoading) {
+  if (isCheckingAuth || isLoading) {
     return (
       <div className="container mx-auto max-w-7xl py-8 space-y-8">
         <div className="flex items-center justify-center">
@@ -248,7 +250,7 @@ export default function Page() {
               {t('loading', { ns: 'question' })}
             </h1>
             <div className="text-muted-foreground">
-              {t('loadingDescription', { ns: 'question' })}
+              {isCheckingAuth ? t('checkingAuthentication', { ns: 'common', defaultValue: 'Checking authentication...' }) : t('loadingDescription', { ns: 'question' })}
             </div>
           </div>
         </div>

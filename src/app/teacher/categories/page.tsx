@@ -15,6 +15,7 @@ import { TextareaField } from "@/components/form-field/textarea-field"
 import { toast } from "sonner"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/hooks/use-auth"
 
 interface Category {
   id: string
@@ -42,6 +43,7 @@ type CategoryFormValues = z.infer<ReturnType<typeof getCategorySchema>>
 
 export default function CategoryManagementPage() {
   const { t, i18n } = useTranslation(['category', 'common', 'question'])
+  const { isCheckingAuth } = useAuth()
   const [categories, setCategories] = useState<Category[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -79,9 +81,22 @@ export default function CategoryManagementPage() {
     }
   }, [t])
 
+  // Fetch categories after auth check completes
   useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+    if (!isCheckingAuth) {
+      fetchCategories()
+    }
+  }, [isCheckingAuth, fetchCategories])
+
+  if (isCheckingAuth) {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">{t('loading', { ns: 'common' })}</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (data: CategoryFormValues) => {
     const url = editingCategory 

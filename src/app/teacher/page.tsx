@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/use-auth";
 
 type QuestionType = "MCQ4" | "TRUE_FALSE" | "SHORT_ANSWER";
 type Difficulty = "NHAN_BIET" | "THONG_HIEU" | "VAN_DUNG";
@@ -45,6 +46,7 @@ function parseLegacy(text: string, legacyType: "multiple" | "truefalse" | "short
 
 export default function TeacherIntegrated() {
   const { t } = useTranslation(['common', 'teacher']);
+  const { isCheckingAuth } = useAuth();
   const [legacyType, setLegacyType] = useState<"multiple"|"truefalse"|"short">("multiple");
   const [legacyText, setLegacyText] = useState(typeSamples["multiple"]);
   const [difficulty, setDifficulty] = useState<Difficulty>("NHAN_BIET");
@@ -70,6 +72,16 @@ export default function TeacherIntegrated() {
     // Load recent questions
     fetch(`/api/questions?page=1&pageSize=10`).then(r => r.json()).then(d => setRecent(d.items || [])).catch(() => {});
   }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">{t('loading', { ns: 'common' })}</p>
+        </div>
+      </div>
+    )
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

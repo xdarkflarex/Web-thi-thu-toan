@@ -29,38 +29,154 @@ export function AppSidebar() {
   useEffect(() => {
     let mounted = true;
     const init = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (mounted) {
-        const user = data.user;
-        setIsAuthed(!!user);
-        setEmail(user?.email ?? "");
-        if (user) {
-          const { data: profile } = await supabase
+      try {
+        // First try to get user from Supabase client
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          // It's normal to not have a session when logged out, so only log non-session errors
+          if (authError.name !== 'AuthSessionMissingError') {
+            console.error('Error getting user:', authError);
+          }
+          if (mounted) {
+            setIsAuthed(false);
+            setEmail("");
+            setRole(null);
+          }
+          return;
+        }
+        
+        if (mounted) {
+          const user = authData.user;
+          const isAuthenticated = !!user;
+          setIsAuthed(isAuthenticated);
+          setEmail(user?.email ?? "");
+          
+          if (!isAuthenticated) {
+            setRole(null);
+            return;
+          }
+
+          // Try fetching role from API first (more reliable with server-side auth)
+          try {
+            const res = await fetch('/api/auth/me', {
+              credentials: 'include',
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success && data.role && mounted) {
+                const validRole = data.role === 'admin' || data.role === 'teacher' || data.role === 'student' 
+                  ? data.role as Role 
+                  : null;
+                setRole(validRole);
+                if (!validRole && data.role) {
+                  console.warn('Invalid role value from API:', data.role);
+                }
+                return;
+              }
+            }
+          } catch {
+            // Silently fall back to direct query
+          }
+
+          // Fallback: try direct Supabase query
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
-          const r = profile?.role as string | undefined
-          setRole(r === 'admin' || r === 'teacher' || r === 'student' ? r : null);
-        } else {
+          
+          if (profileError) {
+            console.error('Error fetching profile directly:', profileError);
+            console.error('User ID:', user.id);
+            console.error('Profile error details:', {
+              message: profileError.message,
+              details: profileError.details,
+              hint: profileError.hint,
+              code: profileError.code
+            });
+            
+            if (mounted) {
+              setRole(null);
+            }
+          } else {
+            const r = profile?.role as string | undefined;
+            if (mounted) {
+              const validRole = r === 'admin' || r === 'teacher' || r === 'student' ? r as Role : null;
+              setRole(validRole);
+              if (!validRole && r) {
+                console.warn('Invalid role value:', r, 'Expected: admin, teacher, or student');
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Unexpected error in sidebar init:', error);
+        if (mounted) {
+          setIsAuthed(false);
           setRole(null);
         }
       }
     };
     init();
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const user = session?.user ?? null;
-      setIsAuthed(!!user);
-      setEmail(user?.email ?? "");
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        const r = profile?.role as string | undefined
-        setRole(r === 'admin' || r === 'teacher' || r === 'student' ? r : null);
-      } else {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+      try {
+        const user = session?.user ?? null;
+        setIsAuthed(!!user);
+        setEmail(user?.email ?? "");
+        
+        // When user logs out, clear role immediately
+        if (!user || event === 'SIGNED_OUT') {
+          setRole(null);
+          return;
+        }
+        
+        if (user) {
+          // Try fetching role from API first
+          try {
+            const res = await fetch('/api/auth/me', {
+              credentials: 'include',
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success && data.role) {
+                const validRole = data.role === 'admin' || data.role === 'teacher' || data.role === 'student' 
+                  ? data.role as Role 
+                  : null;
+                setRole(validRole);
+                return;
+              }
+            }
+          } catch {
+            // Silently fall back to direct query
+          }
+          
+          // Fallback: try direct Supabase query
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          if (profileError) {
+            // Don't log errors for expected cases (like user not found after logout)
+            if (profileError.code !== 'PGRST116') { // PGRST116 = no rows returned
+              console.error('Error fetching profile on auth change:', profileError);
+            }
+            setRole(null);
+          } else {
+            const r = profile?.role as string | undefined;
+            const validRole = r === 'admin' || r === 'teacher' || r === 'student' ? r as Role : null;
+            setRole(validRole);
+            if (!validRole && r) {
+              console.warn('Invalid role value on auth change:', r);
+            }
+          }
+        }
+      } catch (error) {
+        // Only log unexpected errors, not session-related ones
+        if (error instanceof Error && error.name !== 'AuthSessionMissingError') {
+          console.error('Unexpected error in auth state change:', error);
+        }
         setRole(null);
       }
     });
