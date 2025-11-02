@@ -13,22 +13,30 @@ export async function middleware(req: NextRequest) {
 
   const res = NextResponse.next();
 
-  // Define public routes that don't require authentication
-  const publicRoutes = ["/auth/sign-in", "/auth", "/exam/guest", "/"];
-  const isPublicRoute = publicRoutes.some(
-    (route) => path === route || path.startsWith(route + "/")
-  );
-
   // For API routes, let them handle their own authentication (they return JSON, not redirects)
   if (path.startsWith("/api/")) {
     console.log("🔵 [Middleware] API route, skipping auth check");
     return res;
   }
 
-  // If it's a public route, allow access
-  if (isPublicRoute) {
+  // Define public routes that don't require authentication
+  const publicRoutes = ["/auth/sign-in", "/auth", "/exam/guest"];
+  const isPublicRoute = publicRoutes.some(
+    (route) => path === route || path.startsWith(route + "/")
+  );
+
+  // Explicitly check if root path - it should require authentication
+  const isRootPath = path === "/";
+  
+  // If it's a public route (and not root), allow access
+  if (isPublicRoute && !isRootPath) {
     console.log("🔵 [Middleware] Public route, allowing access:", path);
     return res;
+  }
+
+  // Root path always requires authentication (unless it's already excluded above)
+  if (isRootPath) {
+    console.log("🔵 [Middleware] Root path detected, checking authentication");
   }
 
   // Create Supabase client for authentication check
