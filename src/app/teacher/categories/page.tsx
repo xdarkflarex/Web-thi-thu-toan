@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { TextField } from "@/components/form-field/text-field"
 import { SelectField } from "@/components/form-field/select-field"
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
+import { NumberField } from "@/components/form-field/number-field"
+import { TextareaField } from "@/components/form-field/textarea-field"
 import { toast } from "sonner"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/hooks/use-auth"
 
 interface Category {
   id: string
@@ -42,6 +43,7 @@ type CategoryFormValues = z.infer<ReturnType<typeof getCategorySchema>>
 
 export default function CategoryManagementPage() {
   const { t, i18n } = useTranslation(['category', 'common', 'question'])
+  const { isCheckingAuth } = useAuth()
   const [categories, setCategories] = useState<Category[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -79,9 +81,22 @@ export default function CategoryManagementPage() {
     }
   }, [t])
 
+  // Fetch categories after auth check completes
   useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+    if (!isCheckingAuth) {
+      fetchCategories()
+    }
+  }, [isCheckingAuth, fetchCategories])
+
+  if (isCheckingAuth) {
+    return (
+      <div className="container mx-auto p-6 max-w-6xl">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">{t('loading', { ns: 'common' })}</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleSubmit = async (data: CategoryFormValues) => {
     const url = editingCategory 
@@ -192,7 +207,7 @@ export default function CategoryManagementPage() {
   }
 
   const renderCategoryTree = (cats: Category[], level = 0) => (
-    <div className="space-y-1">
+    <div className="space-y-1 pb-1 pr-1">
       {cats.map(cat => (
         <div key={cat.id} className="border rounded-md">
           <div 
@@ -296,23 +311,9 @@ export default function CategoryManagementPage() {
                     {t('slugHelp', { ns: 'category' })}
                   </p>
                 </div>
-                <FormField
-                  control={form.control}
+                <NumberField
                   name="sort_order"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('sortOrder', { ns: 'category' })}</FormLabel>
-                      <FormControl>
-                        <input
-                          type="number"
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label={t('sortOrder', { ns: 'category' })}
                 />
               </div>
 
@@ -353,22 +354,11 @@ export default function CategoryManagementPage() {
                 placeholder={t('noneTopLevel', { ns: 'category' })}
               />
 
-              <FormField
-                control={form.control}
+              <TextareaField
                 name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('description', { ns: 'category' })} ({t('optional', { ns: 'common' })})</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder={t('descriptionPlaceholder', { ns: 'category' })}
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label={`${t('description', { ns: 'category' })} (${t('optional', { ns: 'common' })})`}
+                placeholder={t('descriptionPlaceholder', { ns: 'category' })}
+                rows={3}
               />
 
               <DialogFooter>

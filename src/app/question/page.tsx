@@ -16,11 +16,13 @@ import {
 import { DataTable } from "@/components/custom/data-table";
 import { QuestionService } from "@/lib/question-service";
 import { Database } from "@/types/database";
+import { useAuth } from "@/hooks/use-auth";
 
 type Question = Database["public"]["Tables"]["questions"]["Row"];
 
 export default function QuestionListing() {
   const { t } = useTranslation(['common', 'question', 'teacher', 'category']);
+  const { isCheckingAuth } = useAuth();
   const [data, setData] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -167,8 +169,20 @@ export default function QuestionListing() {
   );
 
   React.useEffect(() => {
-    load();
-  }, [load]);
+    if (!isCheckingAuth) {
+      load();
+    }
+  }, [load, isCheckingAuth]);
+
+  if (isCheckingAuth) {
+    return (
+      <main className="container mx-auto max-w-7xl p-6 space-y-4">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">{t('loading', { ns: 'common' })}</p>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="container mx-auto max-w-7xl p-6 space-y-4">
